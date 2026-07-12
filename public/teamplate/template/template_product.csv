@@ -1,0 +1,7 @@
+product_code,product_name,brand,model,merchant,supplier,warranty,delivery_method,basic_price,market_price,publish_price,courier_package,insurance,packaging,total_digit,start_date,finish_date,unit_point,divide,multiplication,minimum_stock,active,description
+INF-N2,Infinx Note 2,x,x,Accor,None,1 Months,Courier,2,2,2,2,2,2,2,10/09/2017,10/09/2017,2,2,2,2,1,testx
+IPH08,Iphone 8,x,x,Accor,None,1 Months,Courier,2,2,2,2,2,2,2,10/09/2017,10/09/2017,2,2,2,2,1,testx
+AS-N1,Aspire One,x,x,Accor,None,1 Months,Courier,2,2,2,2,2,2,2,10/09/2017,10/09/2017,2,2,2,2,0,testx
+,,,,,,,,,,,,,,,,,,,,,,
+*,*,,,,,,,,,,,,,,,,,,,,,
+,,,,sesuai master,sesuai master,sesuai master,sesuai master,,,,,,,,yyyy-mm-dd,yyyy-mm-dd,,,,,,

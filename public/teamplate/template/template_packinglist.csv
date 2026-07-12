@@ -1,0 +1,3 @@
+packinglist_code,channel_from_code,channel_from_name,channel_to_code,channel_to_name,packinglist_date,purchase_order,document_number,barcode,item_name,serial_number,quantity,expired_date,basic_price,market_price,publish_price,additional_cost,lot_1,lot_2
+PLC000123,,,,,01/06/2016,,,PPK67778D,Pupuks,0,10,01/06/2016,10000,,1500,10,,
+PLC000123,,,,,02/06/2016,,,ODL689123H,Odols,0,20,02/06/2016,5000,,5500,5,,

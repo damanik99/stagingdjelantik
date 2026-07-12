@@ -1,0 +1,9 @@
+username,channel_code,product_code,year,quarter,month,week,quantity,revenue
+dimas,ACC57434,C11CB43406,2015,,11,0,10,0
+dimas,ACC57434,SellThru,2015,,11,0,10,0
+dimas,ACC57434,SellOut,2015,,11,0,10,0
+dimas,ACC57434,None,2015,,11,0,10,0
+dimas,ACC57435,C11CB43406,2015,,11,0,20,0
+dimas,ACC57435,SellThru,2015,,11,0,20,0
+dimas,ACC57435,SellOut,2015,,11,0,20,0
+dimas,ACC57435,None,2015,,11,0,20,0

@@ -1,0 +1,14 @@
+city,code,company,name,phone,email,address
+jakarta,TSTA,Comp1,Test1,62,q@t.com,address1
+jakarta,TSTB,Comp2,Test2,62,q@t.com,address2
+jakarta,,Comp3,Test3,62,q@t.com,address3
+jakarta,,Comp4,Test4,62,q@t.com,address4
+jakarta,TSTE,Comp5,Test5,62,q@t.com,address5
+jakarta,TSTF,Comp6,Test6,62,q@t.com,address6
+jakarta,TSTG,Comp7,Test7,62,q@t.com,address7
+jakarta,,Comp8,Test8,62,q@t.com,address8
+jakarta,TSTI,Comp9,Test9,62,q@t.com,address9
+jakarta,TSTJ,Comp10,Test10,62,q@t.com,address10
+,,,,,,
+*,*,*,*,*,*,*
+Sesuai Master City,Unique,Unique,,,,

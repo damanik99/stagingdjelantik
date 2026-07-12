@@ -1,0 +1,12 @@
+member_id,product_name,unique_number,quantity,claim_by,note1,note2,note3,note4,note5,claim_date,identity_type,identity_number,first_name,last_name,address,city,state,country,phone_number,mobile_number,email,gender,place_of_birth,date_of_birth
+MHP00004,HP DL120 G7 E3-1220 Pluggable AP Svr,XINDHJ67,1,,,,,,,21/08/2013,,,,,,,,,,,,,,
+MHP00005,HP DL120 G7 i3-2100 Pluggable AP Svr,XINDHJ68,1,,,,,,,22/08/2013,,,,,,,,,,,,,,
+MHP00006,HP DL120G7 E3-1220 Pluggable AP Svr,XINDHJ69,1,,,,,,,23/08/2013,,,,,,,,,,,,,,
+MHP00007,HP DL120G7 i3-2100 Pluggable AP Svr,XINDHJ70,1,,,,,,,24/08/2013,,,,,,,,,,,,,,
+MHP00008,HP DL160 G6 E5606 1P 4GB Entry AP Svr,XINDHJ71,1,,,,,,,25/08/2013,,,,,,,,,,,,,,
+MHP00009,HP DL160 G6 E5606 1P 4GB Entry AP Svr,XINDHJ72,1,,,,,,,26/08/2013,,,,,,,,,,,,,,
+MHP00010,HP DL160 G6 E5606 1P 4GB Entry AP Svr,XINDHJ73,1,,,,,,,27/08/2013,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+*,*,,*,,,,,,,*,,,,,,,,,,,,,,
+Terdaftar di member,Terdaftar di program product,Auto/Checking,minimal 1,,,,,,,yyyy-mm-dd,Terdaftar di Master,,,,,,,,,,,,,
+,,Tergantung Program Setting,,,,,,,,,,,,,,,,,,,,,,

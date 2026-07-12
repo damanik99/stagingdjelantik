@@ -1,0 +1,4 @@
+item_code,item_name,brand,model,item_type,category_type,series,merchant,supplier,warranty,delivery_method,item_keyword,basic_price,market_price,publish_price,courier_package,insurance,packaging,start_date,finish_date,point_redeem,quantity,unit_point,minimum_stock,active,description,total_digit
+YUAHS52132,New Item Test,,,Smart Phone,product/catalog/Merchandise,,,,,,,1,1,1,1,1,1,9/9/2017,9/9/2017,1,1,1,1,1,,
+YUAHS52135,New Item Test 2,,,Notebook,product/catalog/Merchandise,,,,,,,1,1,1,1,1,1,9/9/2017,9/9/2017,1,1,1,1,1,,
+,,,,,(tidak boleh selain product/catalog/Merchandise),,,,,,,,,,,,,,,,,,,,,

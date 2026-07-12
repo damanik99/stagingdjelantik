@@ -1,0 +1,8 @@
+redemption_code,tracking_number,user_id,full_name,email,mobile_number,company_name,contact_phone,fax,deliveryaddress1,deliveryaddress2,city,state,country,postal_code,recipient_name,item_sku,quantity,redemption_date,process_date,delivery_date,delivery_order,delivery_method,received_date,received_by,redemption_status,remarks,unit_point,note1,note2,note3
+Z112WFYRWWL1,,ABCDA1,A,email@email.com,12345678,N,12345678,,Indonesia,Indonesia,BATAM,Kepulauan Riau,Indonesia,29433,,IDVOCTOPGOF500M,1,26/07/2013,,26/07/2013,1DGD23123,NCS,26/07/2013,A,Cancel,,1,,,
+Z112WFYRWWL1,,ABCDA2,B,email@email.com,12345679,N,12345679,,Indonesia,Indonesia,BATAM,Kepulauan Riau,Indonesia,29433,,IDVOCTOPGOF500M,4,26/07/2013,,26/07/2013,1DGD23124,NCS,26/07/2013,B,Cancel,,1,,,
+Z112WFYRWWL3,,ABCDA3,C,email@email.com,12345680,N,12345680,,Indonesia,Indonesia,BATAM,Kepulauan Riau,Indonesia,29433,,IDVOCTOPGOF500M,1,26/07/2013,,26/07/2013,1DGD23125,NCS,26/07/2013,C,Cancel,,1,,,
+Z112WFYRWWL4,,ABCDA4,D,email@email.com,12345681,N,12345681,,Indonesia,Indonesia,BATAM,Kepulauan Riau,Indonesia,29433,,IDVOCTOPGOF500M,4,26/07/2013,,26/07/2013,1DGD23126,NCS,26/07/2013,D,Cancel,,1,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+(redemption_confirmation_number),*,*,*,,*,,,,*,,*,,,,,*,*,*,,,,,,,*,,*,,,
+*,,,,,,,,,,,,,,,,Sesuai program catalog,minimal 1,yyyy-mm-dd,yyyy-mm-dd,yyyy-mm-dd,,,yyyy-mm-dd,,sesuai status,,minimal 1,,,

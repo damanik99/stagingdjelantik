@@ -1,0 +1,10 @@
+member_code,username,password,full_name,gender,mobile_phone,personal_email,city,country,domicile_address,postal_code,identity,identity_number,company_name,company_phone,company_email,company_address,account_bank,account_name,account_number
+,,,,,,,,,,,,,,,,,,,
+*,,,*,*,*,,*,,,,,,,,,,,,
+"Member code can be typed or 
+click generate code by system",,,,male/female,62812388927,,,"Option:
+INDONESIA
+MALAYSIA
+AUSTRALIA
+SINGAPURA
+HONGKONG",,,"driver license, identity cards, student card, tax number, paspor",,,,,,,,

@@ -1,0 +1,5 @@
+code,full_name,mobile_phone,email,status,reward
+,,,,,
+*,*,*,*,*,*
+,,numeric,,1 = approve,
+,,,,0 = NULL,
