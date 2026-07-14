@@ -244,14 +244,12 @@ $('#departure').datepicker({
     showOtherMonths: true,
     selectOtherMonths: true,
     dateFormat: 'yy-mm-dd',
-    minDate: 0
 });
 
 $('#arrival').datepicker({
     showOtherMonths: true,
     selectOtherMonths: true,
     dateFormat: 'yy-mm-dd',
-    minDate: 0
 });
 
 $('#supplier_company_program_id').change(function () {
