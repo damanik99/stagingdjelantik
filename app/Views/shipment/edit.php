@@ -323,7 +323,7 @@ $(document).ready(function () {
         });
 
         $.ajax({
-            url: "<?= base_url('/shipment/edit/'.$edit['shipment_id']); ?>",
+            url: "<?= base_url('/shipment/saveedit/'.$edit['shipment_id']); ?>",
             type: "POST",
             data: $(this).serialize(),
             dataType: "json",

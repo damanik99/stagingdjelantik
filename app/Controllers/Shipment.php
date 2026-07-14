@@ -357,11 +357,11 @@ class Shipment extends BaseController
             'message' => 'Operation "Berhasil". Unable to access the shipment edit page.'
         ]);
     }
-    
+
     public function edit($id)
     {
         $dataShipment = $this->shipment->getDetailShipment($id);
-        
+
         if ($dataShipment['status_code'] == 'RTDT') {
 
             $program_id = session()->get('program');
@@ -371,71 +371,8 @@ class Shipment extends BaseController
             $driver   = (new DriverModel())->findAll();
             $vehicle  = (new VehicleModel())->findAll();
             $status = (new StatusModel())->where('module', 'SHIPMENT')->findAll();
-            
-            if ($this->request->getMethod() == 'post') 
-            {
-                if (!$this->request->isAJAX()) {
-                    return redirect()->back();
-                }
 
-                $shipment = $this->shipment->find($id);
-
-                if (!$shipment) {
-                    return $this->response->setJSON([
-                        'success' => false,
-                        'message' => 'Shipment not found.'
-                    ]);
-                }
-
-                $fields = [
-                    'shipment_number',
-                    'purchase_order_id',
-                    'supplier_company_program_id',
-                    'buyer_company_program_id',
-                    'driver_id',
-                    'vehicle_id',
-                    'departure_at',
-                    'arrival_at',
-                ];
-
-                $updateData = [];
-                // var_dump($updateData);exit;
-                foreach ($fields as $field) {
-
-                    $newValue = trim((string) $this->request->getPost($field));
-                    $oldValue = trim((string) ($shipment[$field] ?? ''));
-
-                    if ($oldValue !== $newValue) {
-                        $updateData[$field] = $newValue;
-                    }
-                }
-
-                // Selalu update modified_by jika ada perubahan
-                if (!empty($updateData)) {
-
-                    $updateData['modified_by'] = session()->get('user_id');
-
-                    if (!$this->shipment->update($id, $updateData)) {
-
-                        return $this->response->setJSON([
-                            'success' => false,
-                            'message' => 'Failed to update shipment.'
-                        ]);
-                    }
-
-                    return $this->response->setJSON([
-                        'success' => true,
-                        'message' => 'Shipment updated successfully.'
-                    ]);
-                }
-
-                return $this->response->setJSON([
-                    'success' => true,
-                    'message' => 'No changes detected.'
-                ]);
-            }
-
-            $data = [
+             $data = [
                 'title' => 'Edit Shipment',
                 'edit' => $dataShipment,
                 'buyer' => $buyer,
@@ -446,7 +383,75 @@ class Shipment extends BaseController
             ];
 
             return view('shipment/edit', $data);
+
+        }
+    }
+    
+    public function saveedit($id)
+    {
+        $dataShipment = $this->shipment->getDetailShipment($id);
+        
+        if ($dataShipment['status_code'] == 'RTDT') {
+
+            if (!$this->request->isAJAX()) {
+                return redirect()->back();
+            }
+
+            $shipment = $this->shipment->find($id);
+
+            if (!$shipment) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Shipment not found.'
+                ]);
+            }
+
+            $fields = [
+                'shipment_number',
+                'purchase_order_id',
+                'supplier_company_program_id',
+                'buyer_company_program_id',
+                'driver_id',
+                'vehicle_id',
+                'departure_at',
+                'arrival_at',
+            ];
+
+            $updateData = [];
             
+            foreach ($fields as $field) {
+
+                $newValue = trim((string) $this->request->getPost($field));
+                $oldValue = trim((string) ($shipment[$field] ?? ''));
+
+                if ($oldValue !== $newValue) {
+                    $updateData[$field] = $newValue;
+                }
+            }
+
+            // Selalu update modified_by jika ada perubahan
+            if (!empty($updateData)) {
+
+                $updateData['modified_by'] = session()->get('user_id');
+
+                if (!$this->shipment->update($id, $updateData)) {
+
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'Failed to update shipment.'
+                    ]);
+                }
+
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'Shipment updated successfully.'
+                ]);
+            }
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'No changes detected.'
+            ]);
         }
         else
         {
@@ -454,9 +459,7 @@ class Shipment extends BaseController
                 'success' => false,
                 'message' => 'Shipment Status "Berhasil". Unable to access the shipment edit page.'
             ]);
-        }
-
-        
+        }  
     }
     
 }
