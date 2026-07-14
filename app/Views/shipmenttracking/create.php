@@ -253,7 +253,7 @@ $('#formCheckin').submit(function(e){
 
     $.ajax({
 
-        url: "<?= base_url('/ShipmentTracking/create') ?>",
+        url: "<?= base_url('/ShipmentTracking/savecreate') ?>",
         type: 'POST',
         data: formData,
         processData: false,
