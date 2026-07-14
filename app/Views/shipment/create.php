@@ -320,7 +320,7 @@ $(document).ready(function () {
         });
 
         $.ajax({
-            url: "<?= base_url('/shipment/create'); ?>",
+            url: "<?= base_url('/shipment/savecreate'); ?>",
             type: "POST",
             data: $(this).serialize(),
             dataType: "json",

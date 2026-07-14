@@ -209,65 +209,7 @@ class Shipment extends BaseController
 
     public function create()
     {
-        $program_id = session()->get('program');              
-        if ($this->request->getMethod() == 'post') {
-            
-            $validation = \Config\Services::validation();
-
-            $rules = [
-                'shipment_number' => [
-                    'label' => 'Shipment Number',
-                    'rules' => 'required|is_unique[shipment.shipment_number]'
-                ],
-                'supplier_company_program_id' => [
-                    'label' => 'supplier_company_program_id',
-                    'rules' => 'required'
-                ],
-                'buyer_company_program_id' => [
-                    'label' => 'buyer_company_program_id',
-                    'rules' => 'required'
-                ],
-                'driver_id' => [
-                    'label' => 'Driver',
-                    'rules' => 'required'
-                ],
-                'vehicle_id' => [
-                    'label' => 'Vehicle',
-                    'rules' => 'required'
-                ],
-                'status_id' => [
-                    'label' => 'Status',
-                    'rules' => 'required'
-                ]
-            ];
-
-            if (!$validation->setRules($rules)->run($this->request->getPost())) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'message' => $validation->getErrors()
-                ]);
-            }
-
-            $shipmentNumber = $this->shipment->generateShipmentNumber();
-            
-            $this->shipment->insert([
-                'shipment_number'               => $shipmentNumber,
-                'purchase_order_id'             => $this->request->getPost('purchase_order_id'),
-                'supplier_company_program_id'   => $this->request->getPost('supplier_company_program_id'),
-                'buyer_company_program_id'      => $this->request->getPost('buyer_company_program_id'),
-                'driver_id'                     => $this->request->getPost('driver_id'),
-                'vehicle_id'                    => $this->request->getPost('vehicle_id'),
-                'departure_at'                  => $this->request->getPost('departure_at'),
-                'arrival_at'                    => $this->request->getPost('arrival_at'),
-                'status_id'                     => $this->request->getPost('status_id'),
-                'created_by'                    => session()->get('users_id')
-            ]);
-
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Shipment successfully created'
-            ]);
-        }
+        $program_id = session()->get('program');
 
         $supplier = $this->companyType->getCompanyByType('SUPPLIER', $program_id);
         $buyer   = $this->companyType->getCompanyByType('BUYER', $program_id);
@@ -288,6 +230,67 @@ class Shipment extends BaseController
         ];
 
         return view('shipment/create', $data);
+    }
+
+    public function savecreate()
+    {    
+        $validation = \Config\Services::validation();
+
+        $rules = [
+            'shipment_number' => [
+                'label' => 'Shipment Number',
+                'rules' => 'required|is_unique[shipment.shipment_number]'
+            ],
+            'supplier_company_program_id' => [
+                'label' => 'supplier_company_program_id',
+                'rules' => 'required'
+            ],
+            'buyer_company_program_id' => [
+                'label' => 'buyer_company_program_id',
+                'rules' => 'required'
+            ],
+            'driver_id' => [
+                'label' => 'Driver',
+                'rules' => 'required'
+            ],
+            'vehicle_id' => [
+                'label' => 'Vehicle',
+                'rules' => 'required'
+            ],
+            'status_id' => [
+                'label' => 'Status',
+                'rules' => 'required'
+            ]
+        ];
+
+        if (!$validation->setRules($rules)->run($this->request->getPost())) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => $validation->getErrors()
+            ]);
+        }
+
+        $shipmentNumber = $this->shipment->generateShipmentNumber();
+        
+        $this->shipment->insert([
+            'shipment_number'               => $shipmentNumber,
+            'purchase_order_id'             => $this->request->getPost('purchase_order_id'),
+            'supplier_company_program_id'   => $this->request->getPost('supplier_company_program_id'),
+            'buyer_company_program_id'      => $this->request->getPost('buyer_company_program_id'),
+            'driver_id'                     => $this->request->getPost('driver_id'),
+            'vehicle_id'                    => $this->request->getPost('vehicle_id'),
+            'departure_at'                  => $this->request->getPost('departure_at'),
+            'arrival_at'                    => $this->request->getPost('arrival_at'),
+            'status_id'                     => $this->request->getPost('status_id'),
+            'created_by'                    => session()->get('users_id')
+        ]);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Shipment successfully created'
+        ]);
+
+        
     }
     
     public function driver()
