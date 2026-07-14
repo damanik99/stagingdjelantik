@@ -228,14 +228,12 @@ $('#departure').datepicker({
     showOtherMonths: true,
     selectOtherMonths: true,
     dateFormat: 'yy-mm-dd',
-    minDate: 0
 });
 
 $('#arrival').datepicker({
     showOtherMonths: true,
     selectOtherMonths: true,
     dateFormat: 'yy-mm-dd',
-    minDate: 0
 });
 
 function loadSupplierData(company_program_id)
