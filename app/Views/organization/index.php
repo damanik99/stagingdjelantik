@@ -3,7 +3,8 @@
 <!-- MAIN END -->
 
 <!-- CSS -->
- <!--- FONT-ICONS CSS -->
+
+<!--- FONT-ICONS CSS -->
 <link href="<?= base_url() ?>/teamplate/assets/css/icons.css" rel="stylesheet"/>
 <!-- INTERNAL  DATA TABLE CSS-->
 <link href="<?= base_url() ?>/teamplate/assets/plugins/datatable/dataTables.bootstrap4.min.css" rel="stylesheet" />
@@ -11,6 +12,7 @@
 <link href="<?= base_url() ?>/teamplate/assets/plugins/datatable/fileexport/buttons.bootstrap4.min.css" rel="stylesheet" />
 <!-- INTERNAL  TABS STYLES -->
 <link href="<?= base_url() ?>/teamplate/assets/plugins/tabs/tabs.css" rel="stylesheet" />
+
 <!-- CSS END -->
 
 <!-- MAIN -->
@@ -97,7 +99,7 @@
                 <h1 class="page-title">Data Supplier</h1>
             </div>
             <div class="ml-auto pageheader-btn">
-                <a href="<?=base_url()?>/Organization/create" class="btn btn-success-light btn-icon mr-2">
+                <a href="<?=base_url()?>Organization/create" class="btn btn-success-light btn-icon mr-2">
                     <span>
                         <i class="fa fa-plus mr-2"></i>
                     </span> Create New
@@ -120,7 +122,6 @@
                                         <th>State</th>
                                         <th>Phone</th>
                                         <th>Email</th>
-                                        <th>Picture</th>
                                         <th>Status</th>
                                         <th>Created Date</th>
                                         <th>Action</th>
