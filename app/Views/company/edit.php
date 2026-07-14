@@ -43,13 +43,11 @@
                 <div class="card">
                     <div class="card-status bg-blue br-tr-7 br-tl-7"></div>
                     <div class="card-body">
-                        <form id="companyForm"
-                            action="<?= base_url(); ?>/company/edit/<?= $companyprograms['company_program_id']; ?>"
+                        <form id="companyForm" action="<?= base_url(); ?>company/edit/<?= $companyprograms['company_program_id']; ?>"
                             method="post">
                             <?= csrf_field(); ?>
 
-                            <input type="hidden"
-                                name="company_id"
+                            <input type="hidden" name="company_id"
                                 value="<?= $companyprograms['company_id']; ?>">
 
                             <div class="row">
@@ -93,11 +91,7 @@
                                         <span class="text-danger">*</span>
                                     </label>
 
-                                    <input
-                                        type="text"
-                                        name="pic_name"
-                                        class="form-control"
-                                        value="<?= esc($companyprograms['pic_name']); ?>"
+                                    <input type="text" name="pic_name" class="form-control" value="<?= esc($companyprograms['pic_name']); ?>"
                                         required>
 
                                 </div>
@@ -211,7 +205,7 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
 
     $.ajax({
 
-        url: $(this).attr('action'),
+        url: "<?= base_url('/company/saveedit/'.$companyprograms['company_program_id']) ?>",
         type: 'POST',
         data: $(this).serialize(),
         dataType: 'json',
