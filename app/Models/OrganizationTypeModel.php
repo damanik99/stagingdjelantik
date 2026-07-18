@@ -19,4 +19,13 @@ class OrganizationTypeModel extends Model
 
     protected $useTimestamps = false;
 
+    public function datatype()
+    {
+        $result = $this->db->table('organization_type a')
+            ->get()
+            ->getResultArray();
+
+        return $result;
+    }
+
 }

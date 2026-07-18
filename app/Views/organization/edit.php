@@ -20,6 +20,8 @@
 <?php /** @var array $organizationtype 
  * @var array $provinces
  * @var string $code
+ * @var array $dataOrgz
+ * @var array $status
  * */ ?>
 
 <!--app-content open-->
@@ -31,14 +33,9 @@
                 <!-- <h1 class="page-title">ITEM ADD</h1> -->
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="<?= base_url() ?>Organization">Index</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Create</li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit</li>
                 </ol>
-                <h1 class="page-title">Create New Organization</h1>
-            </div>
-            <div class="ml-auto pageheader-btn">
-                <a href="<?=base_url()?>/CompanyType/create" class="btn btn-radius btn-success-light btn-icon mr-2">
-                    <i class="fa fa-plus mr-2"></i>Create Organization Type
-                </a>
+                <h1 class="page-title">Create Edit Organization</h1>
             </div>
         </div>
         <!-- PAGE-HEADER END -->
@@ -50,59 +47,86 @@
                     <div class="card-status bg-teal br-tr-7 br-tl-7"></div>
                     <div class="card-body">
                         <form id="organizationForm">
-
                             <div class="row">
                                 <div class="col-md-6">
-                                    <label class="form-label">Organization Code </label>
-                                    <input type="text" name="code" class="form-control" value="<?= $code ?>" readonly>
+                                    <div class="form-group">
+                                        <label class="form-label">Organization Code </label>
+                                        <input type="text" name="code" class="form-control" 
+                                        value="<?= $dataOrgz['organization_code'] ?>" readonly>
+                                    </div>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Organization Type <span class="text-danger">*</span></label>
-                                    <select name="organization_type_id" class="form-control select2" required>
-                                        <option value="">-- Select --</option>
-                                        <?php foreach($organizationtype as $row): ?>
-                                        <option value="<?= $row['organization_type_id']; ?>">
-                                            <?= $row['type_name']; ?>
-                                        </option>
-                                        <?php endforeach; ?>
-                                    </select>
+                                    <div class="form-group">
+                                        <label class="form-label">Organization Type <span class="text-danger">*</span></label>
+                                        <input type="text" name="organization_type_id" class="form-control" 
+                                        value="<?= $dataOrgz['type_name'] ?>" readonly>
+                                    </div>
                                 </div>
                                 
                                 <div class="col-md-6">
-                                    <label class="form-label">Organization Name <span class="text-danger">*</span></label>
-                                    <input type="text" name="organization_name" class="form-control" oninput="this.value = this.value.toUpperCase();" required>
+                                    <div class="form-group">
+                                        <label class="form-label">Organization Name <span class="text-danger">*</span></label>
+                                        <input type="text" name="organization_name" class="form-control" 
+                                        oninput="this.value = this.value.toUpperCase();" value="<?= $dataOrgz['organization_name'] ?>" required>
+                                    </div>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">PIC Name <span class="text-danger">*</span></label>
-                                    <input type="text" name="pic_name" class="form-control" 
-                                    oninput="this.value = this.value.replace(/(^\w|\s\w)/g, m => m.toUpperCase());" 
-                                    style="text-transform: capitalize;" required>
+                                    <div class="form-group">
+                                        <label class="form-label">PIC Name <span class="text-danger">*</span></label>
+                                        <input type="text" name="pic_name" class="form-control" 
+                                        oninput="this.value = this.value.replace(/(^\w|\s\w)/g, m => m.toUpperCase());" 
+                                        style="text-transform: capitalize;" value="<?= $dataOrgz['pic_name'] ?>" required>
+                                    </div>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Phone <span class="text-danger">*</span></label>
-                                    <input type="text" name="phone" class="form-control" pattern="[0-9]+" 
-                                    title="Number Only" 
-                                    placeholder="Example: 628749345/081234567" required>
+                                    <div class="form-group">
+                                        <label class="form-label">Phone <span class="text-danger">*</span></label>
+                                        <input type="text" name="phone" class="form-control" pattern="[0-9]+" 
+                                        title="Number Only" value="<?= $dataOrgz['phone'] ?>"
+                                        placeholder="Example: 628749345/081234567" required>
+                                    </div>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" name="email" class="form-control" placeholder="Example: aaa@mail.com">
+                                    <div class="form-label">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" name="email" class="form-control" 
+                                        placeholder="Example: aaa@mail.com" value="<?= $dataOrgz['email'] ?>">
+                                    </div>
                                 </div>
 
-                                <div class="col-md-12 mt-3">
-                                    <label class="form-label">Address</label>
-                                    <textarea name="address" class="form-control"></textarea>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Status <span class="text-danger">*</span></label>
+                                        <select name="status_id" class="form-control select2" required>
+                                            <option value="">-- Select --</option>
+                                            <?php foreach($status as $row): ?>
+                                            <option value="<?= $row['status_id']; ?>" 
+                                                        <?= $row['status_id'] == $dataOrgz['status_id'] ? 'selected' : ''; ?>>
+                                                <?= $row['status_name']; ?>
+                                            </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
                                 </div>
 
-                                <div class="col-md-12 mt-3">
-                                    <label class="form-label">Note</label>
-                                    <textarea name="note" class="form-control"></textarea>
+                                <div class="col-md-12">
+                                    <div class="form-label">
+                                        <label class="form-label">Address</label>
+                                        <textarea name="address" class="form-control"></textarea>
+                                    </div>
                                 </div>
 
+                                <div class="col-md-12">
+                                    <div class="form-label">
+                                        <label class="form-label">Note</label>
+                                        <textarea name="note" class="form-control"></textarea>
+                                    </div>
+                                </div>
+                                
                             </div>
 
                             <div class="text-center mt-5">
@@ -151,12 +175,13 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
 </script>
 
 <script>
+
 $('#organizationForm').submit(function(e){
 
     e.preventDefault();
 
     $.ajax({
-        url: "<?= base_url('/organization/savecreate') ?>",
+        url: "<?= base_url('/organization/saveedit/'.$dataOrgz['organization_program_id']) ?>",
         type: "POST",
         data: $(this).serialize(),
         dataType: "json",
@@ -184,7 +209,6 @@ $('#organizationForm').submit(function(e){
                 }).then(() => {
 
                     window.location.href = response.redirect;
-
                 });
 
             } else {
@@ -329,4 +353,5 @@ $('#village_id').change(function() {
 
 
 });
+
 </script>

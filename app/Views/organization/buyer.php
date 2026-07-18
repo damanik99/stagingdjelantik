@@ -71,14 +71,14 @@
         <!-- PAGE-HEADER -->
         <div class="page-header">
             <div class="mr">
-                <a href="#" class="btn btn-radius btn-defaultsx mr-2">
+                <a href="<?=base_url()?>Organization" class="btn btn-radius btn-default mr-2">
                     <span>
                         <i class="fa fa-truck mr-2"></i>
                     </span> Supplier
                 </a>
             </div>
             <div class="mr">
-                <a href="<?=base_url()?>Organization/buyerindex" class="btn btn-radius btn-default mr-2">
+                <a href="#" class="btn btn-radius btn-defaultsx mr-2">
                     <span>
                         <i class="fa fa-industry mr-2"></i>
                     </span> Buyer
@@ -96,7 +96,7 @@
         <!-- PAGE-HEADER -->
         <div class="page-headersxd">
             <div>
-                <h1 class="page-title">Data Supplier</h1>
+                <h1 class="page-title">Data Buyer</h1>
             </div>
             <div class="ml-auto pageheader-btn">
                 <a href="<?=base_url()?>Organization/create" class="btn btn-success-light btn-icon mr-2">
@@ -120,6 +120,7 @@
                                         <th>Name</th>
                                         <th>Pic Name</th>
                                         <th>Phone</th>
+                                        <th>Email</th>
                                         <th>Type</th>
                                         <th>Status</th>
                                         <th>Created Date</th>
@@ -188,7 +189,7 @@ $(document).ready(function () {
         order: [[7, 'desc']],
 
         ajax: {
-            url: "<?= base_url('/organization/suppliertables'); ?>",
+            url: "<?= base_url('/organization/buyertables'); ?>",
             type: "POST"
         },
 
@@ -197,10 +198,11 @@ $(document).ready(function () {
             { data: 'organization_name' },
             { data: 'pic_name' },
             { data: 'phone' },
+            { data: 'email' },
             { data: 'type_name' },
             { data: 'status_badge' },
             { data: 'created_date' },
-            { data: 'action' }
+            { data: 'action' }         
         ],
 
         columnDefs: [

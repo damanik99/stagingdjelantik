@@ -5,8 +5,19 @@ use App\Models\CounterModel;
 
 class CustomModel extends Model
 {
+	/**
+	 * Generates and sets a random string ID for a model column.
+	 *
+	 * @param string $model
+	 * @param string $column   <-- Change "mixed" to "string" here
+	 * @param string $string
+	 * @param int    $length
+	 * @return mixed
+	 */
 
-    public function setIdRandomString($model, $column, $string = '', $length, $type)
+	protected $_model;
+
+    public function setIdRandomString($model, $column, $length, $type, $string = '')
 	{	
 		if($type == "Number")
 			$characters = '0123456789';
@@ -23,10 +34,12 @@ class CustomModel extends Model
         }
             
         $random = $string.$customstring;
+
         $this->_model = $this->db->table($model)->select('*')->where($column, $random)->get()->getResultArray();
+		
         if($this->_model)
         {
-            return $this->setIdRandomString($model, $column, $string, $length);
+            return $this->setIdRandomString($model, $column, $length, $string);
         }
         else
 		{
@@ -38,7 +51,7 @@ class CustomModel extends Model
 	{
 		$counterNumber = '';
         $getcounter = $this->db->table('counter')->select('*')->where('name', $name)->get()->getRow();
-        // echo var_dump($name);exit;
+
 		if($getcounter)
 		{
 			$date = date('Y-m-d H:i:s');
@@ -60,13 +73,13 @@ class CustomModel extends Model
             $dataCounter = $this->db->table('counter')->select('*')->where('counter_id', $getcounter->counter_id)->get()->getRow();
 			
             $nm = $dataCounter->counter;
-            
-			$update_counter = new counterModel();
+
 			if($dataCounter)
 			{
 				$updatecounter = [
 					'counter' => $nm+1,
 				];
+
 				$this->db->table('counter')->where('counter_id', $dataCounter->counter_id)->update($updatecounter);
 			}
 		}

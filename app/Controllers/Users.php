@@ -435,6 +435,16 @@ class Users extends BaseController
     }
 
     //Get data region
+    public function getProvinsi($provinceId)
+    {
+        $data = $this->provinceModel->where('id', $provinceId)
+            ->orderBy('provinsi', 'ASC')
+            ->findAll();
+
+        return $this->response->setJSON($data);
+    }
+
+    //Get data region
     public function getCity($provinceId)
     {
         $data = $this->kabkotModel
