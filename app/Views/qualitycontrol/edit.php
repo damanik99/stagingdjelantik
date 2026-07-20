@@ -154,59 +154,6 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
 
 <script>
 
-// $('#shipment_id').on('change', function() {
-
-//     let shipmentId = parseInt($(this).val());
-//     console.log(shipmentId);
-
-//     $('#type_id').html('<option value="">Loading...</option>');
-
-//     $.get("<?//= base_url('QualityControl/getType/') ?>/" + shipmentId, function(response) {
-
-//         let option = '<option value="">-- Select Company Type --</option>';
-
-//         option += '<option value="'+response.supplier+ ' - ' + 'Supplier'+ '">' + response.supplier + ' - ' + 'SUPPLIER' + '</option>';
-//         option += '<option value="'+response.buyer + ' - ' + 'Buyer'+ '">' + response.buyer + ' - ' + 'BUYER' + '</option>';
-
-//         $('#type_id').html(option);
-
-//     });
-// });
-
-// $('#shipment_id').on('change', function () {
-
-//     loadType($(this).val());
-
-// });
-
-// function loadType(shipmentId )
-// {
-//     $('#type_id').html('<option value="">Loading...</option>');
-
-//     if (shipmentId != '') {
-
-//         // Driver
-//         $.get("<?//= base_url('QualityControl/getType/') ?>/" + shipmentId, function(response){
-            
-//             let selecteds = (response.supplier == "<?//= $qc['qc_type']; ?>") ? 'selected' : '';
-//             let selectedb = (response.buyer == "<?//= $qc['qc_type']; ?>") ? 'selected' : '';
-//             console.log(selectedb);
-//             console.log(selecteds);
-//             let option = '<option value="">-- Select Company Type --</option>';
-
-//             option += '<option value="'+response.supplier+'" '+selecteds+'>'+response.supplier+'</option>';
-//             option += '<option value="'+response.buyer+'" '+selectedb+'>'+response.buyer+'</option>';
-
-//             $('#type_id').html(option);
-
-//         });
-
-//     } else {
-
-//         $('#type_id').html('<option value="">-- Select Company IT --</option>');
-//     }
-// }
-
 $(document).ready(function() {
     
     function fetchSupplier(shipmentId) {
@@ -250,23 +197,14 @@ $('#qcForm').submit(function(e){
     e.preventDefault();
 
     let formData = new FormData(this);
-
-
-    console.log('=== FORM DATA ===');
-
-    for (let pair of formData.entries()) {
-        console.log(pair[0] + ':', pair[1]);
-    }    
                                           
     $.ajax({
-        url: "<?= base_url('QualityControl/edit/'.$qc['qc_id']) ?>",
+        url: "<?= base_url('QualityControl/saveedit/'.$qc['qc_id']) ?>",
         type: "POST",
         data: formData,
         processData: false,
         contentType: false,
-        beforeSend: function(){
-
-           console.log('=== REQUEST SENT ===');
+        beforeSend: function() {
 
             Swal.fire({
                 title: 'Saving...',
@@ -281,9 +219,6 @@ $('#qcForm').submit(function(e){
         success: function(response, textStatus, xhr){
 
             console.log('=== SUCCESS ===');
-            console.log('Status:', xhr.status);
-            console.log('Response:', response);
-
             if(response.status){
 
                 Swal.fire({
@@ -291,24 +226,20 @@ $('#qcForm').submit(function(e){
                     title: 'Success',
                     text: response.message
                 }).then(() => {
-
-                    window.location.href =
-                        "<?= base_url('/QualityControl') ?>";
-
+                    window.location.href = "<?= base_url('QualityControl') ?>";
                 });
 
             }else{
 
                 let errors = '';
 
-                if(response.errors){
+                if(response.errors) {
 
                     $.each(response.errors, function(key, value){
                         errors += value + '<br>';
                     });
 
                 } else {
-                    console.log('Message:', response.message);
                     errors = response.message;
                 }
 

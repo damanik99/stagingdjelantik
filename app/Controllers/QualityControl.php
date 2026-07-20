@@ -99,11 +99,6 @@ class QualityControl extends BaseController
             }
 
             $company = $this->request->getPost('type_id');
-            // var_dump($company);exit;
-            // $expl = explode(' - ', $companytype);
-            
-            // $company = trim($expl[0]);
-            // $type = trim($expl[1]);
 
             $this->qcModel->insert([
                 'shipment_id' => $this->request->getPost('shipment_id'),
@@ -283,101 +278,11 @@ class QualityControl extends BaseController
         ]);
     }
 
-    public function edit($id)
+    public function edit($id) 
     {
         $companyType     = $this->companyType->where('status', 'active')->findAll();
         $getDataQc       = $this->qcModel->getdataQc($id);
         $getDataShipment = $this->qcModel->getDataShipmentEdit($getDataQc['shipment_id']);
-
-        if ($this->request->getMethod() === 'post') {
-
-            $validation = \Config\Services::validation();
-
-            $rules = [
-                'type_id'     => 'required',
-                'shipment_id' => 'required',
-                'ffa'         => 'required|decimal',
-                'mi'          => 'required|decimal',
-                'result'      => 'required'
-            ];
-
-            if (!$this->validate($rules)) {
-
-                return $this->response->setJSON([
-                    'status' => false,
-                    'errors' => $validation->getErrors()
-                ]);
-            }
-
-            $this->db->transBegin();
-
-            try {
-
-                $photoPath = $getDataQc['photo'];
-
-                $photo = $this->request->getFile('photo');
-
-                if ($photo && $photo->isValid() && !$photo->hasMoved()) {
-
-                    $extension = $photo->getExtension();
-                    $randomCode = strtoupper(substr(bin2hex(random_bytes(4)), 0, 8));
-                    $photoName = 'BYR' . date('Ymd') . $randomCode . '.' . $extension;
-                    $uploadPath = 'uploads/qc/';
-                    $photo->move(FCPATH . $uploadPath, $photoName);
-
-                    $photoPath = $uploadPath . $photoName;
-
-                    if (!empty($getDataQc['photo'])) {
-
-                        $oldPhoto = FCPATH . $getDataQc['photo'];
-
-                        if (file_exists($oldPhoto)) {
-                            unlink($oldPhoto);
-                        }
-                    }
-                }
-                
-                $updateData = [
-                    'shipment_id' => $this->request->getPost('shipment_id'),
-                    'type_id'     => $this->request->getPost('type_id'),
-                    'ffa'         => $this->request->getPost('ffa'),
-                    'mi'          => $this->request->getPost('mi'),
-                    'result'      => $this->request->getPost('result'),
-                    'notes'       => $this->request->getPost('notes'),
-                    'photo'       => $photoPath,
-                    'modified_by' => session()->get('username'),
-                    'modified_at' => date('Y-m-d H:i:s')
-                ];
-
-                $this->qcModel->update($id, $updateData);
-
-                if ($this->db->transStatus() === false) {
-
-                    $this->db->transRollback();
-
-                    return $this->response->setJSON([
-                        'status' => false,
-                        'message' => 'Failed to update data.'
-                    ]);
-                }
-
-                $this->db->transCommit();
-
-                return $this->response->setJSON([
-                    'status' => true,
-                    'message' => 'Quality Control updated successfully.'
-                ]);
-
-            } catch (\Throwable $e) {
-
-                $this->db->transRollback();
-
-                return $this->response->setJSON([
-                    'status' => false,
-                    'message' => $e->getMessage()
-                ]);
-            }
-        }
 
         $data = [
             'ttle'        => 'Edit Quality Control',
@@ -387,6 +292,99 @@ class QualityControl extends BaseController
         ];
 
         return view('qualitycontrol/edit', $data);
+
+    }
+
+    public function saveedit($id)
+    {
+        $getDataQc = $this->qcModel->getdataQc($id);
+
+        $validation = \Config\Services::validation();
+
+        $rules = [
+            'type_id'     => 'required',
+            'shipment_id' => 'required',
+            'ffa'         => 'required|decimal',
+            'mi'          => 'required|decimal',
+            'result'      => 'required'
+        ];
+
+        if (!$this->validate($rules)) {
+
+            return $this->response->setJSON([
+                'status' => false,
+                'errors' => $validation->getErrors()
+            ]);
+        }
+
+        $this->db->transBegin();
+
+        try {
+
+            $photoPath = $getDataQc['photo'];
+
+            $photo = $this->request->getFile('photo');
+
+            if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+
+                $extension = $photo->getExtension();
+                $randomCode = strtoupper(substr(bin2hex(random_bytes(4)), 0, 8));
+                $photoName = 'BYR' . date('Ymd') . $randomCode . '.' . $extension;
+                $uploadPath = 'uploads/qc/';
+                $photo->move(FCPATH . $uploadPath, $photoName);
+
+                $photoPath = $uploadPath . $photoName;
+
+                if (!empty($getDataQc['photo'])) {
+
+                    $oldPhoto = FCPATH . $getDataQc['photo'];
+
+                    if (file_exists($oldPhoto)) {
+                        unlink($oldPhoto);
+                    }
+                }
+            }
+            
+            $updateData = [
+                'shipment_id' => $this->request->getPost('shipment_id'),
+                'type_id'     => $this->request->getPost('type_id'),
+                'ffa'         => $this->request->getPost('ffa'),
+                'mi'          => $this->request->getPost('mi'),
+                'result'      => $this->request->getPost('result'),
+                'notes'       => $this->request->getPost('notes'),
+                'photo'       => $photoPath,
+                'modified_by' => session()->get('username'),
+                'modified_at' => date('Y-m-d H:i:s')
+            ];
+
+            $this->qcModel->update($id, $updateData);
+
+            if ($this->db->transStatus() === false) {
+
+                $this->db->transRollback();
+
+                return $this->response->setJSON([
+                    'status' => false,
+                    'message' => 'Failed to update data.'
+                ]);
+            }
+
+            $this->db->transCommit();
+
+            return $this->response->setJSON([
+                'status' => true,
+                'message' => 'Quality Control updated successfully.'
+            ]);
+
+        } catch (\Throwable $e) {
+
+            $this->db->transRollback();
+
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 
     public function getType($id) //company type
