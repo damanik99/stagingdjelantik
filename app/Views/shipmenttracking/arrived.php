@@ -272,7 +272,7 @@ $('#formArrived').submit(function(e){
 
     $.ajax({
 
-        url: "<?= base_url('/ShipmentTracking/arrivedsave/') ?>",
+        url: "<?= base_url('/ShipmentTracking/arrivedsave/'.$shipmentTrack['shipment_id']) ?>",
         type: 'POST',
         data: formData,
         processData: false,

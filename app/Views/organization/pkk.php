@@ -36,7 +36,7 @@
   -ms-flex-align: center;
   align-items: center;
   margin: 0.5rem 0rem;
-  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
   justify-content: space-between;
   padding: 0;
   border-radius: 7px;

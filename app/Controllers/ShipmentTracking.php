@@ -353,7 +353,7 @@ class ShipmentTracking extends BaseController
         return view('shipmenttracking/arrived', $data);
     }
 
-    public function arrivedsave($shipmentId = null)
+    public function arrivedsave($shipmentId)
     {
         try {
 
