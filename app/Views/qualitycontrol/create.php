@@ -84,7 +84,7 @@
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Hasil <span class="text-danger">*</span></label>
+                                    <label class="form-label">Result <span class="text-danger">*</span></label>
                                     <select name="result" class="form-control" required>
                                         <option value="">Select</option>
                                         <option value="in_spec">IN SPEC</option>

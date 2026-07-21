@@ -9,12 +9,14 @@ use App\Models\DriverModel;
 use App\Models\VehicleModel;
 use App\Models\PurchaseOrderModel;
 use App\Models\StatusModel;
+use App\Models\OrganizationModel;
 
 class Shipment extends BaseController
 {
     protected ShipmentModel $shipment;
     protected CompanyModel $company;
     protected CompanyTypeModel $companyType;
+    protected OrganizationModel $organizationModel;
 
     public function __construct()
     {
@@ -28,6 +30,7 @@ class Shipment extends BaseController
         $this->shipment = new ShipmentModel();
         $this->company = new CompanyModel();
         $this->companyType = new CompanyTYpeModel();
+        $this->organizationModel = new OrganizationModel();
     }
 
     public function index()
@@ -211,7 +214,7 @@ class Shipment extends BaseController
     {
         $program_id = session()->get('program');
 
-        $supplier = $this->companyType->getCompanyByType('SUPPLIER', $program_id);
+        $supplier = $this->organizationModel->getTypeOrg('SUPPLIER');
         $buyer   = $this->companyType->getCompanyByType('BUYER', $program_id);
         
         $vehicle  = (new VehicleModel())->findAll();

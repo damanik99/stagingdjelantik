@@ -88,7 +88,7 @@
 
                                 <?php elseif ($row['status_code'] == 'DLVD') : ?>
 
-                                    <a href="<?= base_url('ShipmentTracking/chek-out/'.$row['shipment_id']); ?>"
+                                    <a href="<?= base_url('ShipmentTracking/checkout/'.$row['shipment_id']); ?>"
                                     class="btn btn-secondary btn-block">
                                         CHECKOUT
                                     </a>
