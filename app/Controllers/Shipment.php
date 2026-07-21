@@ -40,6 +40,29 @@ class Shipment extends BaseController
         return view('shipment/index', $data);
     }
 
+    public function collectionCreate()
+    {
+        $organization = $this->organizationModel->getDataOrg();
+        $buyer   = $this->organizationModel->getTypeOrg('BUYER');
+        
+        $vehicle  = (new VehicleModel())->findAll();
+        // $data['po'] = (new PurchaseOrderModel())->findAll();
+        
+        $status = (new StatusModel())->where('module', 'SHIPMENT')->findAll();
+
+        $dataDriver = $this->db->table('driver')->get()->getResultArray();
+
+        $data = [
+            'driver' => $dataDriver,
+            'status' => $status,
+            'organization' => $organization,
+            'buyer' => $buyer,
+            'vehicle' =>  $vehicle
+        ];
+
+        return view('shipment/collection/create', $data);
+    }
+
     public function datatables()
     {
         $request = service('request');
@@ -214,8 +237,8 @@ class Shipment extends BaseController
     {
         $program_id = session()->get('program');
 
-        $supplier = $this->organizationModel->getTypeOrg('SUPPLIER');
-        $buyer   = $this->companyType->getCompanyByType('BUYER', $program_id);
+        $supplier = $this->company->datacompany('SUPPLIER');
+        $buyer   = $this->company->datacompany('BUYER');
         
         $vehicle  = (new VehicleModel())->findAll();
         // $data['po'] = (new PurchaseOrderModel())->findAll();
@@ -244,12 +267,12 @@ class Shipment extends BaseController
                 'label' => 'Shipment Number',
                 'rules' => 'required|is_unique[shipment.shipment_number]'
             ],
-            'supplier_company_program_id' => [
-                'label' => 'supplier_company_program_id',
+            'supplier_organization_program_id' => [
+                'label' => 'supplier_organization_program_id',
                 'rules' => 'required'
             ],
-            'buyer_company_program_id' => [
-                'label' => 'buyer_company_program_id',
+            'buyer_organization_program_id' => [
+                'label' => 'buyer_organization_program_id',
                 'rules' => 'required'
             ],
             'driver_id' => [
@@ -258,10 +281,6 @@ class Shipment extends BaseController
             ],
             'vehicle_id' => [
                 'label' => 'Vehicle',
-                'rules' => 'required'
-            ],
-            'status_id' => [
-                'label' => 'Status',
                 'rules' => 'required'
             ]
         ];
@@ -278,13 +297,12 @@ class Shipment extends BaseController
         $this->shipment->insert([
             'shipment_number'               => $shipmentNumber,
             'purchase_order_id'             => $this->request->getPost('purchase_order_id'),
-            'supplier_company_program_id'   => $this->request->getPost('supplier_company_program_id'),
-            'buyer_company_program_id'      => $this->request->getPost('buyer_company_program_id'),
+            'shipment_type'                 => $this->request->getPost('shipment_type'),
             'driver_id'                     => $this->request->getPost('driver_id'),
             'vehicle_id'                    => $this->request->getPost('vehicle_id'),
             'departure_at'                  => $this->request->getPost('departure_at'),
             'arrival_at'                    => $this->request->getPost('arrival_at'),
-            'status_id'                     => $this->request->getPost('status_id'),
+            'status_id'                     => '11',
             'created_by'                    => session()->get('users_id')
         ]);
 
@@ -292,8 +310,6 @@ class Shipment extends BaseController
             'success' => true,
             'message' => 'Shipment successfully created'
         ]);
-
-        
     }
     
     public function driver()
