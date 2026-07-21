@@ -88,7 +88,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Supplier <span class="text-danger">*</span></label>
-                                        <select name="supplier_company_program_id" id="supplier_company_program_id"
+                                        <select name="supplier_organization_program_id" id="supplier_organization_program_id"
                                                 class="form-control select2-show-search">
                                             <option value="">Select Supplier</option>
                                             <?php foreach ($supplier as $row) : ?>
@@ -103,7 +103,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Buyer <span class="text-danger">*</span></label>
-                                        <select name="buyer_company_program_id"
+                                        <select name="buyer_organization_program_id"
                                                 class="form-control select2-show-search" required>
                                             <option value="">Select Buyer</option>
                                             <?php foreach ($buyer as $row) : ?>
@@ -119,7 +119,7 @@
                                     <div class="form-group">
                                         <label class="form-label">Driver <span class="text-danger">*</span></label>
                                         <select name="driver_id" class="form-control select2-show-search" required>
-                                            <option value="">--Select Driver--</option>
+                                            <option value="">-- Select Driver --</option>
                                             <?php foreach ($driver as $row) : ?>
                                                 <option value="<?= $row['driver_id']; ?>">
                                                     <?= $row['driver_name']; ?>
@@ -133,7 +133,7 @@
                                     <div class="form-group">
                                         <label class="form-label">Vehicle</label>
                                         <select name="vehicle_id" class="form-control select2-show-search">
-                                            <option value="">Select Vehicle</option>
+                                            <option value="">-- Select Vehicle --</option>
                                             <?php foreach ($vehicle as $row) : ?>
                                                 <option value="<?= $row['vehicle_id']; ?>">
                                                     <?= $row['plate_number'].' - '.$row['brand']; ?>
@@ -175,16 +175,16 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <div class="form-group">
-                                        <label class="form-label">Status <span class="text-danger">*</span></label>
-                                        <select name="status_id" class="form-control select2-show-search" required>
-                                            <option value="">Select Status</option>
-                                            <?php foreach ($status as $row) : ?>
-                                                <option value="<?= $row['status_id']; ?>">
-                                                    <?= $row['status_name']; ?>
-                                                </option>
-                                            <?php endforeach; ?>
+                                        <label class="form-label">Shipment Type</label>
+                                        <select name="shipment_type"
+                                                class="form-control select2-show-search">
+                                            <option value="">-- Select --</option>
+                                                <option value="COLLECTION">Collection</option>
+                                                <option value="INBOUND">Inbound</option>
+                                                <option value="OUTBOUND">Outbound</option>
+                                                <option value="TRANSFER">Transfer</option>
                                         </select>
                                     </div>
                                 </div>
