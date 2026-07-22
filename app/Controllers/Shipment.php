@@ -267,11 +267,11 @@ class Shipment extends BaseController
                 'label' => 'Shipment Number',
                 'rules' => 'required|is_unique[shipment.shipment_number]'
             ],
-            'supplier_organization_program_id' => [
+            'supplier_company_program_id' => [
                 'label' => 'supplier_organization_program_id',
                 'rules' => 'required'
             ],
-            'buyer_organization_program_id' => [
+            'buyer_company_program_id' => [
                 'label' => 'buyer_organization_program_id',
                 'rules' => 'required'
             ],
@@ -296,6 +296,8 @@ class Shipment extends BaseController
         
         $this->shipment->insert([
             'shipment_number'               => $shipmentNumber,
+            'supplier_company_program_id'   => $this->request->getPost('supplier_company_program_id'),
+            'buyer_company_program_id'   => $this->request->getPost('buyer_company_program_id'),
             'purchase_order_id'             => $this->request->getPost('purchase_order_id'),
             'shipment_type'                 => $this->request->getPost('shipment_type'),
             'driver_id'                     => $this->request->getPost('driver_id'),

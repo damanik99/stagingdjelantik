@@ -88,7 +88,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Supplier <span class="text-danger">*</span></label>
-                                        <select name="supplier_organization_program_id" id="supplier_organization_program_id"
+                                        <select name="supplier_company_program_id" id="supplier_company_program_id"
                                                 class="form-control select2-show-search">
                                             <option value="">Select Supplier</option>
                                             <?php foreach ($supplier as $row) : ?>
@@ -103,7 +103,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Buyer <span class="text-danger">*</span></label>
-                                        <select name="buyer_organization_program_id"
+                                        <select name="buyer_company_program_id"
                                                 class="form-control select2-show-search" required>
                                             <option value="">Select Buyer</option>
                                             <?php foreach ($buyer as $row) : ?>
@@ -175,7 +175,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-12">
+                                <!-- <div class="col-md-12">
                                     <div class="form-group">
                                         <label class="form-label">Shipment Type</label>
                                         <select name="shipment_type"
@@ -187,7 +187,7 @@
                                                 <option value="TRANSFER">Transfer</option>
                                         </select>
                                     </div>
-                                </div>
+                                </div> -->
 
                             </div>
 

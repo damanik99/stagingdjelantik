@@ -39,7 +39,7 @@
                         <i class="fa fa-plus mr-2"></i>
                     </span> New Create
                 </a>
-            </div>
+                </div>
             </div>
         </div>
         <!-- PAGE-HEADER END -->
