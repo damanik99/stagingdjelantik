@@ -334,7 +334,7 @@ class Shipment extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
-        return view('shipment/collection/detail', [
+        return view('shipment/detail', [
             'title' => 'Detail Shipment',
             'shipment' => $routes[0], // Header shipment
             'routes'   => $routes      // Detail route
