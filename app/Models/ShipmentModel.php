@@ -15,17 +15,12 @@ class ShipmentModel extends Model
     protected $allowedFields = [
         'shipment_number',
         'purchase_order_id',
-        'supplier_company_program_id',
-        'buyer_company_program_id',
+        'shipment_type',
         'driver_id',
         'vehicle_id',
         'departure_at',
         'arrival_at',
         'status_id',
-        'qty_checkin',
-        'unit_checkin',
-        'qty_checkout',
-        'unit_checkout',
         'created_date',
         'modified_date',
         'created_by',
@@ -265,4 +260,18 @@ class ShipmentModel extends Model
             ->get()
             ->getRowArray();
     }
+
+    public function dataShipment($shipmentId)
+    {
+        $sql = "
+            SELECT a.*, d.driver_name, v.plate_number, s.status_id, s.status_code FROM shipment a
+            JOIN driver d ON a.driver_id = d.driver_id
+            JOIN vehicle v ON a.vehicle_id = v.vehicle_id
+            JOIN status s ON a.status_id = s.status_id
+            WHERE a.shipment_id = ?
+        ";
+
+        return $this->db->query($sql, [$shipmentId])->getRowArray();
+    }
+
 }

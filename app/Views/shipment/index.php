@@ -11,6 +11,31 @@
 <link href="<?= base_url() ?>/teamplate/assets/plugins/tabs/tabs.css" rel="stylesheet" />
 <!-- CSS END -->
 
+<style>
+
+.btn-defaultsx {
+    color: #242e4c;
+    background: #e9e9e9;
+    border-color: #ebedfc;
+    box-shadow: none;
+}
+
+.page-headersxd {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  margin: 0.5rem 0rem;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0;
+  border-radius: 7px;
+  position: relative;
+  min-height: 50px;
+}
+
+</style>
+
 <!-- MAIN -->
 <?= $this->include('layout/body') ?>
 <!-- MAIN END -->
@@ -21,28 +46,26 @@
 <div class="app-content">
     <div class="side-app">
 
-        <!-- PAGE-HEADER -->
         <div class="page-header">
             <div>
-                <h1 class="page-title">
-                </h1>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="#">Table</a></li>
-                    <li class="breadcrumb-item active" aria-current="page"><?=$title?></li>
+                    <li class="breadcrumb-item active" aria-current="page">Shipment</li>
                 </ol>
+            </div>
+        </div>
+        <div class="page-headersxd">
+            <div>
                 <h1 class="page-title">Data Shipment</h1>
             </div>
             <div class="ml-auto pageheader-btn">
-                <div class="ml-auto pageheader-btn">
-                <a href="<?=base_url()?>/Shipment/create" class="btn btn-success-light btn-icon mr-2">
+                <a href="<?=base_url()?>Shipment/create" class="btn btn-success-light btn-icon mr-2">
                     <span>
                         <i class="fa fa-plus mr-2"></i>
                     </span> New Create
                 </a>
-                </div>
             </div>
         </div>
-        <!-- PAGE-HEADER END -->
         <div class="row">
             <div class="col-md-12 col-lg-12">
                 <div class="card">
@@ -50,16 +73,16 @@
                     <div class="card-body">
                         <div class="table-responsive">
                             <table id="shipmentTable" class="table table-bordered border-t0 key-buttons text-nowrap w-100">
-                                <thead>
+                                 <thead>
                                     <tr>
-                                        <th>SHIPMENT NO</th>
-                                        <th>SUPPLIER</th>
-                                        <th>BUYER</th>
-                                        <th>DRIVER</th>
-                                        <th>VEHICLE</th>
-                                        <th>STATUS</th>
-                                        <th>CREATED DATE</th>
-                                        <th>ACTION</th>
+                                        <th>Shipment No</th>
+                                        <th>Shipment Type</th>
+                                        <th>Driver</th>
+                                        <th>Vehicle</th>
+                                        <th class="text-center">Stop</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th width="120">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -124,39 +147,36 @@ $(document).ready(function () {
         serverSide: true,
         responsive: true,
         autoWidth: false,
-        order: [[6, 'desc']],
-
+    
         ajax: {
-            url: "<?= base_url('/shipment/datatables'); ?>",
+            url: "<?= base_url('shipment/datatables') ?>",
             type: "POST"
         },
 
+        "order": [
+            [0, 'desc']
+        ],
+    
         columns: [
             { data: 'shipment_number' },
-            { data: 'supplier_name' },
-            { data: 'buyer_name' },
+            { data: 'shipment_type' },
             { data: 'driver_name' },
             { data: 'plate_number' },
+            {
+                data: 'total_stop',
+                className: 'text-center'
+            },
             { data: 'status_badge' },
             { data: 'created_date' },
             { data: 'action' }
         ],
-
         columnDefs: [
             {
-                targets: [5,7],
+                targets: [4, 7],
                 orderable: false
             }
-        ],
-
-        createdRow: function(row, data, dataIndex) {
-
-            $('td:eq(5)', row).html(data.status_badge);
-            $('td:eq(7)', row).html(data.action);
-
-        }
+        ]
     });
-
 });
 
 $(document).on('click', '.btnDetail', function () {
@@ -169,7 +189,7 @@ $(document).on('click', '.btnDetail', function () {
     $("#modalDetailShpment").modal("show");
 
     $.ajax({
-        url: "<?= base_url('/shipment/detailShipment')?>/" + id,
+        url: "<?= base_url('shipment/detail')?>/" + id,
         type: "GET",
         success: function(response){
 
@@ -183,7 +203,7 @@ $(document).on('click', '.btnDetail', function () {
 
             $("#detailShipment").html(`
                 <div class="alert alert-danger">
-                    Failed to load company detail.
+                    Failed to load shipment detail.
                 </div>
             `);
 
@@ -192,6 +212,7 @@ $(document).on('click', '.btnDetail', function () {
 
 });
 
+// check status to page edit shipment collection
 const base_url = "<?= base_url(); ?>";
 
 $(document).on('click', '.btn-edit-shipment', function () {
@@ -210,7 +231,7 @@ $(document).on('click', '.btn-edit-shipment', function () {
     });
 
     $.ajax({
-        url: base_url + '/shipment/checkEditAccess/' + id,
+        url: base_url + 'shipment/checkEditAccess/' + id, 
         type: 'GET',
         dataType: 'json',
         success: function (response) {
@@ -220,7 +241,7 @@ $(document).on('click', '.btn-edit-shipment', function () {
             } else {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Shipment Status "Berhasil"',
+                    title: 'Shipment Status Not "Siap Jalan"',
                     text: 'Unable to access the shipment edit page.',
                     confirmButtonText: 'OK'
                 });

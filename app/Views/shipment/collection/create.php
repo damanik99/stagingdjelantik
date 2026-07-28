@@ -112,42 +112,7 @@
                                         </select>
                                     </div>
                                 </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Departure Date</label>
-                                        <div class="wd-200 mg-b-30">
-											<div class="input-group">
-												<div class="input-group-prepend">
-													<div class="input-group-text">
-														<i class="fa fa-calendar tx-16 lh-0 op-6"></i>
-													</div>
-												</div>
-                                                <input name="departure_at" class="form-control fc-datepicker" placeholder="MM/DD/YYYY" type="text" id="departure" required>
-											</div>
-										</div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Arrival Date</label>
-                                        <div class="wd-200 mg-b-30">
-											<div class="input-group">
-												<div class="input-group-prepend">
-													<div class="input-group-text">
-														<i class="fa fa-calendar tx-16 lh-0 op-6"></i>
-													</div>
-												</div>
-                                                <input name="arrival_at" class="form-control fc-datepicker" placeholder="MM/DD/YYYY" type="text" id="arrival" required>
-											</div>
-										</div>
-                                    </div>
-                                </div>
                             </div>
-
-                            
-
                         </div>
 
                         <div class="card-body">
@@ -164,7 +129,6 @@
                                             <th>Organization</th>
                                             <th width="180">Departure</th>
                                             <th width="180">Arrival</th>
-                                            <th width="120">Qty</th>
                                             <th width="80"></th>
                                         </tr>
                                     </thead>
@@ -238,10 +202,7 @@ $('#btnAddRoute').click(function () {
     <td>
         <select name="route[${sequence}][activity_type]" class="form-control">
             <option value="PICKUP">Pickup</option>
-            <option value="WAREHOUSE">Warehouse</option>
-            <option value="SUPPLIER">Supplier</option>
-            <option value="BUYER">Buyer</option>
-            <option value="TRANSIT">Transit</option>
+            <option value="DROPOFF">Drop Off</option>
         </select>
     </td>
 
@@ -258,17 +219,16 @@ $('#btnAddRoute').click(function () {
 
     <td>
         <input
-        type="datetime-local"
-        class="form-control"
-        name="route[${sequence}][departure_at]">
+            type="text"
+            class="form-control departure"
+            name="route[${sequence}][departure_at]">
     </td>
 
     <td>
-        <input type="datetime-local" class="form-control" name="route[${sequence}][arrival_at]">
-    </td>
-
-    <td>
-        <input type="number" step="0.01" class="form-control" name="route[${sequence}][qty]">
+        <input
+            type="text"
+            class="form-control arrival"
+            name="route[${sequence}][arrival_at]">
     </td>
 
     <td>
@@ -286,24 +246,21 @@ $('#btnAddRoute').click(function () {
         width:'100%'
     });
 
+    $('.departure').datepicker({
+        showOtherMonths: true,
+        selectOtherMonths: true,
+        dateFormat: 'yy-mm-dd',
+    });
+
+    $('.arrival').datepicker({
+        showOtherMonths: true,
+        selectOtherMonths: true,
+        dateFormat: 'yy-mm-dd',
+    });
+
     sequence++;
 
 });
-
-$('#departure').datepicker({
-    showOtherMonths: true,
-    selectOtherMonths: true,
-    dateFormat: 'yy-mm-dd',
-});
-
-$('#arrival').datepicker({
-    showOtherMonths: true,
-    selectOtherMonths: true,
-    dateFormat: 'yy-mm-dd',
-});
-
-
-
 
 $(document).ready(function () {
 
@@ -316,7 +273,6 @@ $(document).ready(function () {
 
         let formData = $(this).serialize();
 
-        console.log(formData);
         Swal.fire({
             title: 'Please Wait...',
             allowOutsideClick: false,
@@ -326,12 +282,12 @@ $(document).ready(function () {
         });
 
         $.ajax({
-            url: "<?= base_url('/shipment/savecreate'); ?>",
+            url: "<?= base_url('/shipment/saveCollection'); ?>",
             type: "POST",
             data: $(this).serialize(),
             dataType: "json",
             success: function(response) {
-                console.log(response);
+                console.log('test',response);
                 console.log(typeof response); 
                 if (response.success == true) {
 
@@ -345,17 +301,13 @@ $(document).ready(function () {
 
                 } else {
 
-                    let errorMsg = '';
-
-                    $.each(response.message, function(key, value) {
-                        errorMsg += value + '<br>';
-                    });
-
                     Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        html: errorMsg
+                        icon: 'warning',
+                        title: 'Validation',
+                        text: response.message
                     });
+
+                    return;
 
                 }
 
@@ -374,4 +326,49 @@ $(document).ready(function () {
     });
 
 });
+
+// Delete Row
+$(document).on('click','.btnDelete',function(){
+
+    $(this).closest('tr').remove();
+
+    resetSequence();
+
+});
+// Reset Sequence number
+function resetSequence(){
+
+    let no = 1;
+
+    $('#routeTable tbody tr').each(function(){
+
+        $(this).find('td:first').html(`
+            <input type="hidden"
+                   name="route[${no}][sequence_no]"
+                   value="${no}">
+            ${no}
+        `);
+
+        $(this).find('select:eq(0)')
+               .attr('name',`route[${no}][activity_type]`);
+
+        $(this).find('select:eq(1)')
+               .attr('name',`route[${no}][organization_program_id]`);
+
+        $(this).find('input:eq(1)')
+               .attr('name',`route[${no}][departure_at]`);
+
+        $(this).find('input:eq(2)')
+               .attr('name',`route[${no}][arrival_at]`);
+
+        $(this).find('input:eq(3)')
+               .attr('name',`route[${no}][qty]`);
+
+        no++;
+
+    });
+
+    sequence = no;
+
+}
 </script>

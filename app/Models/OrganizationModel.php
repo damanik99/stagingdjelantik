@@ -59,7 +59,25 @@ class OrganizationModel extends Model
                 ->join('status d', 'a.status_id = d.status_id')
                 ->where('a.program_id', $program_id)
                 ->where('type_name', $typename)
-                ->where('d.status_code', 'COMPANY')
+                ->where('d.module', 'ORGANIZATION')
+                ->where('status_name', 'Active')
+                ->get()->getResultArray();
+
+        return $data;
+    }
+
+    public function getDataOrg()
+    {
+        $program_id = session()->get('program');
+
+        $data = $this->db->table('organization_program a')
+                ->select('a.organization_program_id, b.organization_name, d.status_code, d.status_name')
+                ->join('organization b', 'a.organization_id = b.organization_id')
+                ->join('organization_type c', 'a.organization_type_id = c.organization_type_id')
+                ->join('status d', 'a.status_id = d.status_id')
+                ->where('a.program_id', $program_id)
+                ->where('d.module', 'ORGANIZATION')
+                ->where('status_name', 'Active')
                 ->get()->getResultArray();
 
         return $data;

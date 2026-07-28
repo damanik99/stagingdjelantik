@@ -3,27 +3,13 @@
 <!-- MAIN END -->
 
 <!-- CSS -->
-
-<!--- FONT-ICONS CSS -->
-<link href="<?= base_url() ?>/teamplate/assets/css/icons.css" rel="stylesheet"/>
 <!-- INTERNAL  DATA TABLE CSS-->
 <link href="<?= base_url() ?>/teamplate/assets/plugins/datatable/dataTables.bootstrap4.min.css" rel="stylesheet" />
 <link href="<?= base_url() ?>/teamplate/assets/plugins/datatable/responsivebootstrap4.min.css" rel="stylesheet" />
 <link href="<?= base_url() ?>/teamplate/assets/plugins/datatable/fileexport/buttons.bootstrap4.min.css" rel="stylesheet" />
 <!-- INTERNAL  TABS STYLES -->
 <link href="<?= base_url() ?>/teamplate/assets/plugins/tabs/tabs.css" rel="stylesheet" />
-
-<link rel="stylesheet" href="https://ka-f.webawesome.com/webawesome@3.10.0/styles/webawesome.css" />
-<script type="module" src="https://ka-f.webawesome.com/webawesome@3.10.0/webawesome.loader.js"></script>
-
-
 <!-- CSS END -->
-
-<!-- MAIN -->
-<?= $this->include('layout/body') ?>
-<!-- MAIN END -->
-
-<?php /** @var string $title */ ?>
 
 <style>
 
@@ -40,7 +26,7 @@
   -ms-flex-align: center;
   align-items: center;
   margin: 0.5rem 0rem;
-  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
   justify-content: space-between;
   padding: 0;
   border-radius: 7px;
@@ -50,11 +36,16 @@
 
 </style>
 
+<!-- MAIN -->
+<?= $this->include('layout/body') ?>
+<!-- MAIN END -->
+
+<?php /** @var string $title */ ?>
+
 <!--app-content open-->
 <div class="app-content">
     <div class="side-app">
 
-        <!-- PAGE-HEADER -->
         <div class="page-header">
             <div>
                 <ol class="breadcrumb">
@@ -74,7 +65,7 @@
                 </a>
             </div>
             <div class="mr">
-                <a href="<?=base_url()?>Organization/buyerindex" class="btn btn-radius btn-default mr-2">
+                <a href="<?=base_url()?>ShipmentInbound/index" class="btn btn-radius btn-default mr-2">
                     <span>
                         <i class="fa fa-truck mr-2"></i>
                     </span> Inbound
@@ -110,7 +101,6 @@
                 </a>
             </div>
         </div>
-        
         <div class="row">
             <div class="col-md-12 col-lg-12">
                 <div class="card">
@@ -118,16 +108,15 @@
                     <div class="card-body">
                         <div class="table-responsive">
                             <table id="shipmentTable" class="table table-bordered border-t0 key-buttons text-nowrap w-100">
-                                <thead>
+                                 <thead>
                                     <tr>
-                                        <th>SHIPMENT NO</th>
-                                        <th>SUPPLIER</th>
-                                        <th>BUYER</th>
-                                        <th>DRIVER</th>
-                                        <th>VEHICLE</th>
-                                        <th>STATUS</th>
-                                        <th>CREATED DATE</th>
-                                        <th>ACTION</th>
+                                        <th>Shipment No</th>
+                                        <th>Driver</th>
+                                        <th>Vehicle</th>
+                                        <th class="text-center">Stop</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th width="120">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -140,14 +129,14 @@
         </div>
 
         <!-- Modal -->
-        <div class="modal fade" id="modalDetailOrgz" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal fade" id="modalDetailShpment" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
                 <div class="modal-content">
 
                     <div class="modal-header bg-teal">
                         <h5 class="modal-title text-white">
-                            <i class="fa fa-building mr-2"></i>
-                            Detail
+                            <i class="fa fa-truck mr-2"></i>
+                            Shipment
                         </h5>
 
                         <button type="button" class="close text-white" data-dismiss="modal">
@@ -162,13 +151,14 @@
                             Loading...
                         </div>
 
-                        <div id="detailOrgzContent"></div>
+                        <div id="detailShipment"></div>
 
                     </div>
 
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
@@ -180,7 +170,123 @@
 <script src="<?= base_url() ?>/teamplate/assets/plugins/datatable/jquery.dataTables.min.js"></script>
 <script src="<?= base_url() ?>/teamplate/assets/plugins/datatable/dataTables.bootstrap4.min.js"></script>
 <script src="<?= base_url() ?>/teamplate/assets/plugins/datatable/dataTables.responsive.min.js"></script>
+<!-- SWEET ALERT -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+$(document).ready(function () {
 
+    $('#shipmentTable').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+        autoWidth: false,
+    
+        ajax: {
+            url: "<?= base_url('shipment/datatables') ?>",
+            type: "POST"
+        },
+    
+        columns: [
+            { data: 'shipment_number' },
+            { data: 'driver_name' },
+            { data: 'plate_number' },
+            {
+                data: 'total_stop',
+                className: 'text-center'
+            },
+            { data: 'status_badge' },
+            { data: 'created_date' },
+            { data: 'action' }
+        ],
+        columnDefs: [
+            {
+                targets: [4, 6],
+                orderable: false
+            }
+        ]
+    });
+});
+
+$(document).on('click', '.btnDetail', function () {
+
+    let id = $(this).data('id');
+
+    $("#detailShipment").html("");
+    $("#loadingDetail").show();
+
+    $("#modalDetailShpment").modal("show");
+
+    $.ajax({
+        url: "<?= base_url('shipment/detail')?>/" + id,
+        type: "GET",
+        success: function(response){
+
+            $("#loadingDetail").hide();
+            $("#detailShipment").html(response);
+
+        },
+        error:function(){
+
+            $("#loadingDetail").hide();
+
+            $("#detailShipment").html(`
+                <div class="alert alert-danger">
+                    Failed to load shipment detail.
+                </div>
+            `);
+
+        }
+    });
+
+});
+
+// check status to page edit shipment collection
+const base_url = "<?= base_url(); ?>";
+
+$(document).on('click', '.btn-edit-shipment', function () {
+
+    let id = $(this).data('id');
+    let url = $(this).data('url');
+console.log(id);
+    Swal.fire({
+        title: 'Please wait...',
+        text: 'Checking shipment access.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    $.ajax({
+        url: base_url + 'shipment/checkEditAccess/' + id, 
+        type: 'GET',
+        dataType: 'json',
+        success: function (response) {
+
+            if (response.success) {
+                window.location.href = "<?= base_url('/shipment/edit')?>/" + id;
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Shipment Status Not "Siap Jalan"',
+                    text: 'Unable to access the shipment edit page.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        },
+        error: function () {
+            
+            Swal.close();
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An unexpected error occurred.'
+            });
+        }
+    });
+
+});
 </script>

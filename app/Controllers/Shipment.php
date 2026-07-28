@@ -1,5 +1,7 @@
 <?php
 
+/** Controller Shipment untuk proses Shipment Collection  */
+
 namespace App\Controllers;
 
 use App\Models\ShipmentModel;
@@ -10,6 +12,7 @@ use App\Models\VehicleModel;
 use App\Models\PurchaseOrderModel;
 use App\Models\StatusModel;
 use App\Models\OrganizationModel;
+use App\Models\ShipmentDetailModel;
 
 class Shipment extends BaseController
 {
@@ -17,6 +20,12 @@ class Shipment extends BaseController
     protected CompanyModel $company;
     protected CompanyTypeModel $companyType;
     protected OrganizationModel $organizationModel;
+    protected ShipmentDetailModel $shipmentDetail;
+
+    protected $columnSearch;
+    protected $columnOrder;
+    protected $order;
+    protected $table;
 
     public function __construct()
     {
@@ -31,6 +40,7 @@ class Shipment extends BaseController
         $this->company = new CompanyModel();
         $this->companyType = new CompanyTYpeModel();
         $this->organizationModel = new OrganizationModel();
+        $this->shipmentDetail = new ShipmentDetailModel();
     }
 
     public function index()
@@ -40,7 +50,7 @@ class Shipment extends BaseController
         return view('shipment/index', $data);
     }
 
-    public function collectionCreate()
+    public function Create()
     {
         $organization = $this->organizationModel->getDataOrg();
         $buyer   = $this->organizationModel->getTypeOrg('BUYER');
@@ -60,8 +70,444 @@ class Shipment extends BaseController
             'vehicle' =>  $vehicle
         ];
 
-        return view('shipment/collection/create', $data);
+        return view('shipment/create', $data);
     }
+
+    /** Start Create Shipment Collection 
+     * ================================================
+    */
+    
+    /**
+     * Validate Collection Route
+     *
+     * @param array $routes
+     * @return string|null
+     */
+    private function validateRoute(array $routes): ?string
+    {
+        if (count($routes) < 2) {
+            return 'Collection must have at least 2 routes.';
+        }
+
+        $pickupCount = 0;
+        $dropCount   = 0;
+
+        $lastIndex = array_key_last($routes);
+
+        foreach ($routes as $index => $route) {
+
+            $activity = strtoupper(trim($route['activity_type'] ?? ''));
+
+            if (empty($activity)) {
+                return 'Activity type is required.';
+            }
+
+            switch ($activity) {
+
+                case 'PICKUP':
+                    $pickupCount++;
+                    break;
+
+                case 'DROPOFF':
+                    $dropCount++;
+
+                    if ($index !== $lastIndex) {
+                        return 'DROPOFF must be the last route.';
+                    }
+                    break;
+
+                default:
+                    return "Invalid activity type '{$activity}'.";
+            }
+        }
+
+        if ($pickupCount < 1) {
+            return 'Collection must have at least one PICKUP.';
+        }
+
+        if ($dropCount !== 1) {
+            return 'Collection must have exactly one DROPOFF.';
+        }
+
+        return null;
+    }
+
+    private function validateDuplicateOrganization(array $routes): ?string
+    {
+        $organizations = [];
+
+        foreach ($routes as $route) {
+
+            $organizationId = $route['organization_program_id'] ?? null;
+
+            if (empty($organizationId)) {
+                continue;
+            }
+
+            if (isset($organizations[$organizationId])) {
+                return 'Organization cannot be selected more than once.';
+            }
+
+            $organizations[$organizationId] = true;
+        }
+
+        return null;
+    }
+
+    public function save()
+    {
+        $validation = \Config\Services::validation();
+
+        $rules = [
+            'driver_id' => [
+                'label' => 'Driver',
+                'rules' => 'required|integer'
+            ],
+            'vehicle_id' => [
+                'label' => 'Vehicle',
+                'rules' => 'required|integer'
+            ],
+            'shipment_type' => [
+                'label' => 'Shipment Type',
+                'rules' => 'required'
+            ],
+            'route' => [
+                'label' => 'Route',
+                'rules' => 'required'
+            ]
+        ];
+
+        // Validasi setiap route
+        $routes = $this->request->getPost('route');
+
+        $error = $this->validateRoute($routes);
+
+        if ($error !== null) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => $error
+            ]);
+        }
+
+        if (empty($routes) || count($routes) < 2) {
+            return $this->response->setJSON([
+                'success' => false,
+                'errors' => [
+                    'route' => 'Collection must have at least 2 route.'
+                ]
+            ]);
+        }
+
+        $error = $this->validateDuplicateOrganization($routes);
+
+        if ($error !== null) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => $error
+            ]);
+        }
+
+        if (!empty($routes)) {
+            foreach ($routes as $i => $route) {
+
+                $rules["route.$i.activity_type"] = [
+                    'label' => "Activity Row ".($i),
+                    'rules' => 'required'
+                ];
+
+                $rules["route.$i.organization_program_id"] = [
+                    'label' => "Organization Row ".($i),
+                    'rules' => 'required|integer'
+                ];
+
+                $rules["route.$i.departure_at"] = [
+                    'label' => "Departure Row ".($i),
+                    'rules' => 'required'
+                ];
+
+                $rules["route.$i.arrival_at"] = [
+                    'label' => "Arrival Row ".($i),
+                    'rules' => 'required'
+                ];
+
+                $rules["route.$i.sequence_no"] = [
+                    'label' => "Sequence Row ".($i),
+                    'rules' => 'required|integer'
+                ];
+            }
+        }
+
+        if (!$this->validate($rules)) {
+
+            return $this->response->setJSON([
+                'success' => false,
+                'errors'  => $validation->getErrors()
+            ]);
+        }
+
+        $db = \Config\Database::connect();
+
+        $db->transBegin();
+
+        try {
+
+            $shipmentNumber = $this->shipment->generateShipmentNumber();
+
+            $shipment = [
+
+                'shipment_number'   => $shipmentNumber,
+                'purchase_order_id' => $this->request->getPost('purchase_order_id') ?: null,
+                'shipment_type'     => $this->request->getPost('shipment_type'),
+                'driver_id'         => $this->request->getPost('driver_id'),
+                'vehicle_id'        => $this->request->getPost('vehicle_id'),
+                'completed_at'      => null,
+                'status_id'         => 11,
+                'created_date'      => date('Y-m-d H:i:s'),
+                'modified_date'     => date('Y-m-d H:i:s'),
+                'created_by'        => session()->get('users_id'),
+                'modified_by'       => session()->get('users_id')
+            ];
+
+            // var_dump($shipment);exit;
+
+            $this->shipment->insert($shipment);
+
+            $shipmentId = $this->shipment->getInsertID();
+
+            foreach ($routes as $route) {
+
+                $detail = [
+
+                    'shipment_id'                => $shipmentId,
+                    'sequence_no'                => $route['sequence_no'],
+                    'activity_type'              => $route['activity_type'],
+                    'organization_program_id'    => $route['organization_program_id'],
+                    'departure_at'               => $route['departure_at'],
+                    'arrival_at'                 => $route['arrival_at'],
+                    'unit'                       => null,
+                    'status_id'                  => 11,
+                    'note'                       => null,
+                    'created_date'               => date('Y-m-d H:i:s'),
+                    'modified_date'              => date('Y-m-d H:i:s'),
+                    'created_by'                 => session()->get('users_id'),
+                    'modified_by'                => session()->get('users_id')
+
+                ];
+
+                $this->shipmentDetail->insert($detail);
+
+            }
+
+            if ($db->transStatus() === false) {
+
+                $db->transRollback();
+
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Failed to save shipment.'
+                ]);
+            }
+
+            $db->transCommit();
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Shipment successfully created'
+            ]);
+
+        } catch (\Throwable $e) {
+
+            $db->transRollback();
+
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function detail($shipmentId)
+    {
+        $routes = $this->shipmentDetail->getShipmentDetail($shipmentId);
+
+        if (empty($routes)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        return view('shipment/collection/detail', [
+            'title' => 'Detail Shipment',
+            'shipment' => $routes[0], // Header shipment
+            'routes'   => $routes      // Detail route
+        ]);
+    }
+
+    public function edit($shipmentId)
+    {
+        $shipmentModel = new ShipmentModel();
+        $detailModel   = new ShipmentDetailModel();
+
+        $organization = $this->organizationModel->getDataOrg();
+
+        // $shipment = $shipmentModel->find($shipmentId);
+        $shipment = $this->shipment->dataShipment($shipmentId);
+
+        $vehicle  = (new VehicleModel())->findAll();
+        // $data['po'] = (new PurchaseOrderModel())->findAll();
+        
+        $status = (new StatusModel())->where('module', 'SHIPMENT')->findAll();
+
+        $dataDriver = $this->db->table('driver')->get()->getResultArray();
+
+        if (!$shipment) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $routes = $this->db->table('shipment_detail a')
+            ->select('a.shipment_detail_id, a.organization_program_id, sequence_no, activity_type, o.organization_name, a.departure_at, a.arrival_at')
+            ->join('organization_program op', 'op.organization_program_id = a.organization_program_id')
+            ->join('organization o', 'o.organization_id = op.organization_id')
+            ->where('shipment_id', $shipmentId)
+            ->orderBy('sequence_no')
+            ->get()->getResultArray();
+
+        return view('shipment/edit', [
+            'shipment'  => $shipment,
+            'routes'    => $routes,
+            'driver'    => $dataDriver,
+            'vehicle'   => $vehicle,
+            'organization' => $organization
+        ]);
+    }
+
+    private function validateUpdate($shipment,$post)
+    {
+        if($shipment['status_id'] == '10') {
+
+            if($shipment['driver_id'] != $post['driver_id'])
+            {
+                throw new \Exception(
+                    'Driver tidak dapat diubah.'
+                );
+            }
+
+            if($shipment['vehicle_id'] != $post['vehicle_id']) {
+                throw new \Exception(
+                    'Vehicle tidak dapat diubah.'
+                );
+            }
+        }
+
+        $this->validateCollectionRoute(
+            $post['route']
+        );
+
+    }
+
+    public function updateCollection($shipmentId)
+    {
+        $shipment = $this->shipment->dataShipment($shipmentId);
+
+        if (!$shipment) {
+            return $this->response->setJSON([
+                'status'  => false,
+                'message' => 'Shipment tidak ditemukan.'
+            ]);
+        }
+
+        $allowedStatus = [
+            'RTDT',
+        ];
+
+        if (!in_array($shipment['status_code'], $allowedStatus, true)) {
+
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => 'Cannot be changed .'
+            ]);
+        }
+
+        $post = $this->request->getPost();
+
+        $routes = $this->request->getPost('route');
+
+        $this->validateUpdate($shipment, $post);
+
+        $this->validateCollectionRoute($routes);
+
+        $this->db->transBegin();
+
+        try {
+                
+                $this->replaceShipmentDetail($shipmentId, $routes);
+
+                $this->updateShipmentHeader($shipment);
+
+                if ($this->db->transStatus() === false) {
+                    throw new \Exception('Database transaction failed.');
+                }
+
+                $this->db->transCommit();
+
+                return $this->response->setJSON([
+                    'status' => true,
+                    'message' => 'Shipment updated successfully.'
+                ]);
+
+            } catch (\Throwable $e) {
+
+                return $this->response->setJSON([
+                    'status'  => false,
+                    'message' => $e->getMessage()
+                ]);
+            }
+    }
+
+    private function updateShipmentHeader(array $shipment)
+    {
+        $data = [];
+        
+        if ($shipment['status_id'] == '11') {
+
+            $data['driver_id'] = $this->request->getPost('driver_id');
+            $data['vehicle_id'] = $this->request->getPost('vehicle_id');
+
+        }
+
+        if (!empty($data)) {
+            $this->shipment->update(
+                $shipment['shipment_id'],
+                $data
+            );
+        }
+    }
+
+    // 
+    private function replaceShipmentDetail($shipmentId, array $routes)
+    {
+        $this->shipmentDetail
+            ->where('shipment_id', $shipmentId)
+            ->delete();
+
+        foreach ($routes as $route) {
+
+            unset($route['shipment_detail_id']);
+
+            $route['shipment_id'] = $shipmentId;
+
+            $route['status_id'] = 11;
+
+            if (!$this->shipmentDetail->insert($route)) {
+
+                throw new \Exception(
+                    implode(', ', $this->shipmentDetail->errors())
+                );
+
+            }
+
+        }
+
+    }
+
 
     public function datatables()
     {
@@ -72,59 +518,65 @@ class Shipment extends BaseController
         $length = $request->getPost('length');
         $search = $request->getPost('search')['value'] ?? '';
 
+        $program_id = session()->get('program');
+
         $baseQuery = "
             FROM shipment a
-            LEFT JOIN company_program b
-                ON a.supplier_company_program_id = b.company_program_id
-            LEFT JOIN company_program c
-                ON a.buyer_company_program_id = c.company_program_id
-            LEFT JOIN company cp
-                ON b.company_id = cp.company_id
-            LEFT JOIN company cpb
-                ON c.company_id = cpb.company_id
-            LEFT JOIN driver d
-                ON a.driver_id = d.driver_id
-            LEFT JOIN vehicle e
-                ON a.vehicle_id = e.vehicle_id
-            LEFT JOIN status f
-                ON a.status_id = f.status_id
-            WHERE 1=1
+            LEFT JOIN driver b
+                ON a.driver_id = b.driver_id
+            LEFT JOIN vehicle c
+                ON a.vehicle_id = c.vehicle_id
+            LEFT JOIN status d
+                ON a.status_id = d.status_id
+            LEFT JOIN shipment_detail e
+                ON a.shipment_id = e.shipment_id
+            JOIN organization_program op 
+                ON e.organization_program_id = op.organization_program_id
+            JOIN program p
+                ON op.program_id = p.program_id
+            JOIN organization o
+                ON op.organization_id = o.organization_id
+            WHERE op.program_id = ?
         ";
 
         $filter = "";
-        $params = [];
+        $params = [$program_id];
 
         if (!empty($search)) {
 
             $filter .= "
                 AND (
                     a.shipment_number LIKE ?
-                    OR cp.company_name LIKE ?
-                    OR cpb.company_name LIKE ?
-                    OR d.driver_name LIKE ?
-                    OR e.plate_number LIKE ?
-                    OR f.status_name LIKE ?
+                    OR a.shipment_type LIKE ?
+                    OR b.driver_name LIKE ?
+                    OR c.plate_number LIKE ?
+                    OR d.status_name LIKE ?
+                    OR a.created_date LIKE ?
                 )
             ";
 
-            for ($i = 0; $i < 6; $i++) {
-                $params[] = "%{$search}%";
-            }
+            $params[] = "%{$search}%";
+            $params[] = "%{$search}%";
+            $params[] = "%{$search}%";
+            $params[] = "%{$search}%";
+            $params[] = "%{$search}%";
+            $params[] = "%{$search}%";
         }
 
         $totalRecords = $this->db
-            ->query("SELECT COUNT(*) cnt {$baseQuery}")
-            ->getRow()
-            ->cnt;
+            ->query("
+                SELECT COUNT(DISTINCT a.shipment_id) cnt
+                {$baseQuery}", [$program_id])->getRow()->cnt;
 
         $totalFiltered = $totalRecords;
 
         if (!empty($search)) {
-
             $totalFiltered = $this->db
                 ->query(
-                    "SELECT COUNT(*) cnt {$baseQuery} {$filter}",
-                    $params
+                    "
+                    SELECT COUNT(DISTINCT a.shipment_id) cnt
+                    {$baseQuery} {$filter}
+                    ", $params
                 )
                 ->getRow()
                 ->cnt;
@@ -132,35 +584,36 @@ class Shipment extends BaseController
 
         $orderColumn = [
             'a.shipment_number',
-            'cp.company_name',
-            'cpb.company_name',
-            'd.driver_name',
-            'e.plate_number',
-            'f.status_name',
+            'a.shipment_type',
+            'b.driver_name',
+            'c.plate_number',
+            'd.status_name',
             'a.created_date'
         ];
 
-        $orderDirection =
-            $request->getPost('order')[0]['dir'] ?? 'DESC';
+        $orderDirection = $request->getPost('order')[0]['dir'] ?? 'DESC';
 
         $orderBy =
             $orderColumn[
-                $request->getPost('order')[0]['column'] ?? 6
+                $request->getPost('order')[0]['column'] ?? 3
             ];
 
         $sql = "
             SELECT
                 a.*,
-                cp.company_name AS supplier_name,
-                cpb.company_name AS buyer_name,
-                d.driver_name,
-                e.plate_number,
-                f.status_name
+                b.driver_name,
+                c.plate_number,
+                d.status_code,
+                d.status_name,
+                COUNT(e.shipment_detail_id) AS total_stop
             {$baseQuery}
             {$filter}
-            ORDER BY {$orderBy} {$orderDirection}
+            GROUP BY
+                a.shipment_id
+            ORDER BY
+                {$orderBy} {$orderDirection}
             LIMIT ?, ?
-        ";
+            ";
 
         $params[] = (int)$start;
         $params[] = (int)$length;
@@ -170,44 +623,56 @@ class Shipment extends BaseController
         $data = [];
 
         foreach ($query->getResultArray() as $row) {
+            switch ($row['status_code']) {
+                case 'RTDT':
+                    $row['status_badge'] =
+                        '<span class="badge badge-primary">'
+                        .$row['status_name'].
+                        '</span>';
+                break;
+                case 'ONPR':
+                    $row['status_badge'] =
+                        '<span class="badge badge-warning">'
+                        .$row['status_name'].
+                        '</span>';
 
-            $statusBadge = '';
+                break;
+                case 'SCMPL':
+                    $row['status_badge'] =
+                        '<span class="badge badge-success">'
+                        .$row['status_name'].
+                        '</span>';
+                break;
 
-            switch (strtoupper($row['status_name'])) {
-
-                case 'PENDING':
-                    $statusBadge = '<span class="badge badge-warning">'.$row['status_name'].'</span>';
-                    break;
-
-                case 'DEPARTED':
-                    $statusBadge = '<span class="badge badge-info">'.$row['status_name'].'</span>';
-                    break;
-
-                case 'ARRIVED':
-                    $statusBadge = '<span class="badge badge-primary">'.$row['status_name'].'</span>';
-                    break;
-
-                case 'DELIVERED':
-                    $statusBadge = '<span class="badge badge-success">'.$row['status_name'].'</span>';
-                    break;
+                case 'CANC':
+                    $row['status_badge'] =
+                        '<span class="badge badge-danger">'
+                        .$row['status_name'].
+                        '</span>';
+                break;
 
                 default:
-                    $statusBadge = '<span class="badge badge-secondary">'.$row['status_name'].'</span>';
-                    break;
+                    $row['status_badge'] =
+                        '<span class="badge badge-secondary">'
+                        .$row['status_name'].
+                        '</span>';
+                break;
             }
 
-            $row['status_badge'] = $statusBadge;
-
             $row['action'] = '
+
                 <a href="javascript:void(0);"
-                class="btn bg-gray-dark btn-sm text-white mb-2 mb-xl-1 btnDetail" data-id="'.$row['shipment_id'].'">
+                    class="btn bg-gray-dark btn-sm text-white mb-2 mb-xl-1 btnDetail" data-id="'.$row['shipment_id'].'"
+                    title="Detail">
                     <i class="fa fa-eye"></i>
                 </a>
 
-                <a href="javascript:void(0);" class="btn btn-cyan btn-sm text-white mb-2 mb-xl-1 btn-edit-shipment"
-                data-id="'.$row['shipment_id'].'" data-url="'.base_url('/shipment/edit/'.$row['shipment_id']).'">
+                <a href="javascript:void(0);"
+                    class="btn btn-cyan btn-sm text-white mb-2 mb-xl-1 btn-edit-shipment" data-id="'.$row['shipment_id'].'"
+                    title="Edit">
                     <i class="fa fa-pencil"></i>
                 </a>
+
             ';
 
             $data[] = $row;
@@ -221,99 +686,6 @@ class Shipment extends BaseController
         ]);
     }
     
-    // View Data Shipment
-    public function detailShipment($id)
-    {
-        $dataShipment = $this->shipment->getDetailShipment($id);
-        
-        $data = [
-            'views' => $dataShipment,
-        ];
-
-        return view('shipment/detail', $data);
-    }
-
-    public function create()
-    {
-        $program_id = session()->get('program');
-
-        $supplier = $this->company->datacompany('SUPPLIER');
-        $buyer   = $this->company->datacompany('BUYER');
-        
-        $vehicle  = (new VehicleModel())->findAll();
-        // $data['po'] = (new PurchaseOrderModel())->findAll();
-        
-        $status = (new StatusModel())->where('module', 'SHIPMENT')->findAll();
-
-        $dataDriver = $this->db->table('driver')->get()->getResultArray();
-
-        $data = [
-            'driver' => $dataDriver,
-            'status' => $status,
-            'supplier' => $supplier,
-            'buyer' => $buyer,
-            'vehicle' =>  $vehicle
-        ];
-
-        return view('shipment/create', $data);
-    }
-
-    public function savecreate()
-    {    
-        $validation = \Config\Services::validation();
-
-        $rules = [
-            'shipment_number' => [
-                'label' => 'Shipment Number',
-                'rules' => 'required|is_unique[shipment.shipment_number]'
-            ],
-            'supplier_company_program_id' => [
-                'label' => 'supplier_organization_program_id',
-                'rules' => 'required'
-            ],
-            'buyer_company_program_id' => [
-                'label' => 'buyer_organization_program_id',
-                'rules' => 'required'
-            ],
-            'driver_id' => [
-                'label' => 'Driver',
-                'rules' => 'required'
-            ],
-            'vehicle_id' => [
-                'label' => 'Vehicle',
-                'rules' => 'required'
-            ]
-        ];
-
-        if (!$validation->setRules($rules)->run($this->request->getPost())) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => $validation->getErrors()
-            ]);
-        }
-
-        $shipmentNumber = $this->shipment->generateShipmentNumber();
-        
-        $this->shipment->insert([
-            'shipment_number'               => $shipmentNumber,
-            'supplier_company_program_id'   => $this->request->getPost('supplier_company_program_id'),
-            'buyer_company_program_id'   => $this->request->getPost('buyer_company_program_id'),
-            'purchase_order_id'             => $this->request->getPost('purchase_order_id'),
-            'shipment_type'                 => $this->request->getPost('shipment_type'),
-            'driver_id'                     => $this->request->getPost('driver_id'),
-            'vehicle_id'                    => $this->request->getPost('vehicle_id'),
-            'departure_at'                  => $this->request->getPost('departure_at'),
-            'arrival_at'                    => $this->request->getPost('arrival_at'),
-            'status_id'                     => '11',
-            'created_by'                    => session()->get('users_id')
-        ]);
-
-        return $this->response->setJSON([
-            'success' => true,
-            'message' => 'Shipment successfully created'
-        ]);
-    }
-    
     public function driver()
     {
         $shipmentModel = new \App\Models\ShipmentModel();
@@ -324,7 +696,7 @@ class Shipment extends BaseController
     }
 
     // Driver
-    public function detail($shipmentId)
+    public function details($shipmentId)
     {
         $shipmentModel = new \App\Models\ShipmentModel();
 
@@ -379,7 +751,7 @@ class Shipment extends BaseController
         ]);
     }
 
-    public function edit($id)
+    public function edits($id)
     {
         $dataShipment = $this->shipment->getDetailShipment($id);
 
@@ -410,8 +782,7 @@ class Shipment extends BaseController
     
     public function saveedit($id)
     {
-        $dataShipment = $this->shipment->getDetailShipment($id);
-        
+        $dataShipment = $this->shipmentDetail->getDetailShipment($id);
         if ($dataShipment['status_code'] == 'RTDT') {
 
             if (!$this->request->isAJAX()) {

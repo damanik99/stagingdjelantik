@@ -11,23 +11,19 @@
 <!-- INTERNAL SELECT2 CSS -->
 <link href="<?= base_url() ?>/teamplate/assets/plugins/select2/select2.min.css" rel="stylesheet" />
 
-<!-- INTERNAL  DATE PICKER CSS-->
- <link href="<?= base_url() ?>/teamplate/assets/plugins/date-picker/spectrum.css" rel="stylesheet"/>
-
 <!-- CSS END -->
 
 <!-- LAYOUT BODY -->
 <?= $this->include('layout/body') ?>
 <!-- LAYOUT BODY -->
 
-<?php /** @var array $po
- * @var array $edit
- * @var array $supplier
- * @var array $driver
- * @var array $vehicle
- * @var array $status
- * @var array $buyer
- * */ ?>
+<?php /** @var array<string, mixed> $shipment, 
+ * @var array<string, mixed> $driver 
+ * @var array<string, mixed> $vehicle 
+ * @var array<string, mixed> $routes
+ * @var array<string, mixed> $organization
+ * */ 
+?>
 
 <!--app-content open-->
 <div class="app-content">
@@ -38,9 +34,8 @@
                 <!-- <h1 class="page-title">ITEM ADD</h1> -->
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="<?= base_url() ?>/Shipment">Index</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Create New Company</li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit Shipment</li>
                 </ol>
-                <h1 class="page-title">Create Shipment</h1>
             </div>
         </div>
         <!-- PAGE-HEADER END -->
@@ -48,15 +43,17 @@
         <!-- ROW-1 OPEN -->
         <div class="row">
             <div class="col-md-12">
+                <form id="shipmentForm" method="post">
                 <div class="card">
                     <div class="card-status bg-teal br-tr-7 br-tl-7"></div>
-                    <form id="shipmentForm" method="post">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Shipment Number <span class="text-danger">*</span></label>
-                                        <input type="text" name="shipment_number" class="form-control" value="<?= $edit['shipment_number'] ?>"
+                                        <input type="text" name="shipment_number"
+                                            class="form-control"
+                                            value="<?= $shipment['shipment_number'] ?>"
                                             readonly>
                                     </div>
                                 </div>
@@ -78,44 +75,12 @@
 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label">Supplier <span class="text-danger">*</span></label>
-                                        <select name="supplier_company_program_id" id="supplier_company_program_id"
-                                                class="form-control select2-show-search">
-                                            <option value="">Select Supplier</option>
-                                            <?php foreach ($supplier as $row) : ?>
-                                                <option value="<?= $row['company_program_id']; ?>" 
-                                                <?= $row['company_name'] == $edit['supplier'] ? 'selected' : ''; ?>>
-                                                    <?= $row['company_name']; ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Buyer <span class="text-danger">*</span></label>
-                                        <select name="buyer_company_program_id"
-                                                class="form-control select2-show-search" required>
-                                            <option value="">Select Buyer</option>
-                                            <?php foreach ($buyer as $row) : ?>
-                                                <option value="<?= $row['company_program_id']; ?>"
-                                                    <?= $row['company_name'] == $edit['buyer'] ? 'selected' : ''; ?>>
-                                                    <?= $row['company_name']; ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group">
                                         <label class="form-label">Driver <span class="text-danger">*</span></label>
                                         <select name="driver_id" class="form-control select2-show-search" required>
-                                            <option value="">--Select Driver--</option>
+                                            <option value="">-- Select Driver --</option>
                                             <?php foreach ($driver as $row) : ?>
-                                                <option value="<?= $row['driver_id']; ?>"
-                                                        <?= $row['driver_name'] == $edit['driver_name'] ? 'Selected' : ''; ?>>
+                                                <option value="<?= $row['driver_id']; ?>" 
+                                                <?= $row['driver_id'] == $shipment['driver_id'] ? 'selected' : ''; ?>>
                                                     <?= $row['driver_name']; ?>
                                                 </option>
                                             <?php endforeach; ?>
@@ -127,10 +92,10 @@
                                     <div class="form-group">
                                         <label class="form-label">Vehicle</label>
                                         <select name="vehicle_id" class="form-control select2-show-search">
-                                            <option value="">Select Vehicle</option>
+                                            <option value="">-- Select Vehicle --</option>
                                             <?php foreach ($vehicle as $row) : ?>
-                                                <option value="<?= $row['vehicle_id']; ?>"
-                                                        <?= $row['plate_number'] == $edit['plate_number'] ? 'Selected' : ''; ?>>
+                                                <option value="<?= $row['vehicle_id']; ?>" 
+                                                <?= $row['vehicle_id'] == $shipment['vehicle_id'] ? 'selected' : ''; ?>>
                                                     <?= $row['plate_number'].' - '.$row['brand']; ?>
                                                 </option>
                                             <?php endforeach; ?>
@@ -138,54 +103,152 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <div class="form-group">
-                                        <label class="form-label">Departure Date</label>
-                                        <div class="wd-200 mg-b-30">
-											<div class="input-group">
-												<div class="input-group-prepend">
-													<div class="input-group-text">
-														<i class="fa fa-calendar tx-16 lh-0 op-6"></i>
-													</div>
-												</div>
-                                                <input name="departure_at" class="form-control fc-datepicker" 
-                                                value="<?= date('Y/m/d', strtotime($edit['departure_at'])) ?>"
-                                                placeholder="YYYY/MM/DD" type="text" id="departure" required>
-											</div>
-										</div>
+                                        <label class="form-label">Shipment Type <span class="text-danger">*</span></label>
+                                        <select name="shipment_type" class="form-control" required>
+                                            <option value="">-- Select Shipment Type --</option>
+                                                <option value="COLLECTION" <?= $shipment['shipment_type'] == 'COLLECTION' ? 'selected' : ''; ?>> Collection</option>
+                                                <option value="INBOUND" <?= $shipment['shipment_type'] == 'INBOUND' ? 'selected' : ''; ?>>Inbound</option>
+                                                <option value="OUTBOUND" <?= $shipment['shipment_type'] == 'OUTBOUND' ? 'selected' : '';?>>Outbound</option>
+                                                <option value="TRANSFER" <?= $shipment['shipment_type'] == 'TRANSFER' ? 'selected' : '';?>>Transfer</option>
+                                        </select>
                                     </div>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">Arrival Date</label>
-                                        <div class="wd-200 mg-b-30">
-											<div class="input-group">
-												<div class="input-group-prepend">
-													<div class="input-group-text">
-														<i class="fa fa-calendar tx-16 lh-0 op-6"></i>
-													</div>
-												</div>
-                                                <input name="arrival_at" class="form-control fc-datepicker" 
-                                                value="<?= date('Y/m/d', strtotime($edit['arrival_at'])) ?>"
-                                                placeholder="YYYY/MM/DD" type="text" id="arrival" required>
-											</div>
-										</div>
-                                    </div>
-                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h4>Shipment Route</h4>
+                            <button type="button" class="btn btn-primary mb-3" id="btnAddRoute">
+                                <i class="fa fa-plus"></i> Add Route
+                            </button>
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="routeTable">
+                                    <thead>
+                                        <tr>
+                                            <th width="60">Seq</th>
+                                            <th width="180">Activity</th>
+                                            <th>Organization</th>
+                                            <th width="180">Departure</th>
+                                            <th width="180">Arrival</th>
+                                            <th width="80"></th>
+                                        </tr>
+                                    </thead>
+    
+                                    <tbody>
+                                        <tbody>
+                                            <?php foreach ($routes as $index => $row): ?>
+
+                                            <tr>
+
+                                                <!-- Sequence -->
+                                                <td class="text-center seq-col">
+
+                                                    <input
+                                                        type="hidden"
+                                                        class="sequence-no"
+                                                        name="route[<?= $index ?>][sequence_no]"
+                                                        value="<?= $row['sequence_no']; ?>">
+
+                                                    <span><?= $row['sequence_no']; ?></span>
+
+                                                </td>
+
+                                                <!-- Activity -->
+                                                <td>
+                                                    <input
+                                                        type="hidden"
+                                                        class="activity-type"
+                                                        name="route[<?= $index ?>][activity_type]"
+                                                        value="<?= $row['activity_type']; ?>">
+
+                                                    <span class="activity-label">
+                                                        <?= $row['activity_type']; ?>
+                                                    </span>
+
+                                                </td>
+                                                <!-- Organization -->
+                                                <td>
+                                                    <select class="form-control select2-route organization-program"
+                                                    name="route[<?= $index ?>][organization_program_id]">>
+
+                                                        <option value="">Select Organization</option>
+
+                                                        <?php foreach($organization as $org): ?>
+
+                                                            <option
+                                                                value="<?= $org['organization_program_id']; ?>"
+                                                                <?= $org['organization_program_id']==$row['organization_program_id']
+                                                                    ? 'selected':'';
+                                                                ?>>
+
+                                                                <?= esc($org['organization_name']); ?>
+
+                                                            </option>
+
+                                                        <?php endforeach; ?>
+
+                                                    </select>
+
+                                                </td>
+
+                                                <!-- Departure -->
+                                                <td>
+
+                                                    <input
+                                                        type="text"
+                                                        class="form-control departure"
+                                                        name="route[<?= $index ?>][departure_at]"
+                                                        value="<?= $row['departure_at']; ?>">
+
+                                                </td>
+
+                                                <!-- Arrival -->
+                                                <td>
+
+                                                    <input
+                                                        type="text"
+                                                        class="form-control arrival"
+                                                        name="route[<?= $index ?>][arrival_at]"
+                                                        value="<?= $row['arrival_at']; ?>">
+
+                                                </td>
+
+                                                <td class="text-center">
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-danger btn-sm btnDelete">
+
+                                                        <i class="fa fa-trash"></i>
+
+                                                    </button>
+
+                                                </td>
+
+                                            </tr>
+
+                                            <?php endforeach; ?>
+
+                                            </tbody>
+                                    </tbody>
+                                </table>
                             </div>
 
                             <div class="text-center mt-5">
                                 <a href="<?= base_url('/Shipment'); ?>" class="btn btn-default-light">Cancel</a>
-                                <button type="submit" class="btn btn-teal">Save</button>
+                                <button type="submit" class="btn btn-teal">Update</button>
                             </div>
-
                         </div>
-
-                    </form>
+                    </div>
                 </div>
+                </form>
             </div>
+            <!-- COL END -->
         </div>
+        <!-- ROW-1 CLOSED -->
     </div>
 
 </div>
@@ -203,14 +266,6 @@
 <script src="<?= base_url() ?>/teamplate/assets/plugins/date-picker/jquery-ui.js"></script>
 <script src="<?= base_url() ?>/teamplate/assets/plugins/input-mask/jquery.maskedinput.js"></script>
 
-<!-- INTERNAL  FILE UPLOADES JS -->
-<script src="<?= base_url() ?>/teamplate/assets/plugins/fileuploads/js/fileupload.js"></script>
-<script src="<?= base_url() ?>/teamplate/assets/plugins/fileuploads/js/file-upload.js"></script>
-
-<!-- INTERNAL ACCORDION JS -->
-<script src="<?= base_url() ?>/teamplate/assets/plugins/accordion/accordion.min.js"></script>
-<script src="<?= base_url() ?>/teamplate/assets/plugins/accordion/accordion.js"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 
 <!-- SWEET ALERT -->
@@ -224,152 +279,271 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
 
 <script>
 
-$('#departure').datepicker({
-    showOtherMonths: true,
-    selectOtherMonths: true,
-    dateFormat: 'yy-mm-dd',
-});
+function createRouteRow() {
 
-$('#arrival').datepicker({
-    showOtherMonths: true,
-    selectOtherMonths: true,
-    dateFormat: 'yy-mm-dd',
-});
+    let row = $(`
+        <tr>
 
-function loadSupplierData(company_program_id)
-{
-    $('#driver_id').html('<option value="">Loading...</option>');
-    $('#vehicle_id').html('<option value="">Loading...</option>');
+            <td class="seq-col">
+                <span></span>
+                <input type="hidden" class="sequence-no">
+            </td>
 
-    if (company_program_id != '') {
+            <td class="activity-col">
 
-        // Driver
-        $.get("<?= base_url('shipment/get_driver/') ?>/" + company_program_id, function(response){
+                <span class="activity-label">PICKUP</span>
 
-            let option = '<option value="">-- Select Driver --</option>';
+                <input
+                    type="hidden"
+                    class="activity-type"
+                    value="PICKUP">
 
-            $.each(response, function(i, row){
+            </td>
 
-                let selected = (row.driver_id == "<?= $edit['driver_id']; ?>") ? 'selected' : '';
+            <td>
 
-                option += '<option value="'+row.driver_id+'" '+selected+'>'+row.driver_name+'</option>';
+                <select class="form-control select2-route organization-program">
 
-            });
+                    <option value="">Select Organization</option>
 
-            $('#driver_id').html(option);
+                    <?php foreach($organization as $org){ ?>
 
-        });
+                        <option value="<?= $org['organization_program_id']; ?>">
+                            <?= esc($org['organization_name']); ?>
+                        </option>
 
-        // Vehicle
-        $.get("<?= base_url('shipment/get_vehicle/') ?>/" + company_program_id, function(response){
+                    <?php } ?>
 
-            let option = '<option value="">-- Select Vehicle --</option>';
+                </select>
 
-            $.each(response, function(i, row){
+            </td>
 
-                let selected = (row.vehicle_id == "<?= $edit['vehicle_id']; ?>") ? 'selected' : '';
+            <td>
 
-                option += '<option value="'+row.vehicle_id+'" '+selected+'>'+row.plate_number+' - '+row.brand+'</option>';
+                <input
+                    type="text"
+                    class="form-control departure">
 
-            });
+            </td>
 
-            $('#vehicle_id').html(option);
+            <td>
 
-        });
+                <input
+                    type="text"
+                    class="form-control arrival">
 
-    } else {
+            </td>
 
-        $('#driver_id').html('<option value="">-- Select Driver --</option>');
-        $('#vehicle_id').html('<option value="">-- Select Vehicle --</option>');
-    }
+            <td class="text-center">
+
+                <button
+                    type="button"
+                    class="btn btn-danger btn-sm btnDelete">
+
+                    <i class="fa fa-trash"></i>
+
+                </button>
+
+            </td>
+
+        </tr>
+    `);
+
+    initRow(row);
+
+    return row;
+
 }
 
-$('#supplier_company_program_id').on('change', function () {
+function appendPickup(){
 
-    loadSupplierData($(this).val());
+    let row = createRouteRow();
 
-});
+    // cari row Dropoff
+    let dropoff = $('#routeTable tbody .activity-type').filter(function(){
 
+        return $(this).val() == 'DROPOFF';
 
-$(document).ready(function () {
+    }).closest('tr');
 
-    let company_program_id = $('#supplier_company_program_id').val();
+    if(dropoff.length){
 
-    if (company_program_id != '') {
-        loadSupplierData(company_program_id);
+        row.insertBefore(dropoff);
+
+    }else{
+
+        $('#routeTable tbody').append(row);
+
     }
 
+    resetRoute();
+
+}
+
+$('#btnAddRoute').click(function(){
+
+    appendPickup();
+
 });
 
+function resetRoute() {
 
-$(document).ready(function () {
+    let rows = $('#routeTable tbody tr');
 
-    $('.select2-show-search').select2({
-        width: '100%'
+    rows.each(function(index){
+
+        let seq = index + 1;
+
+        let activity = (seq === rows.length)
+            ? 'DROPOFF'
+            : 'PICKUP';
+
+        // Sequence
+        $(this).find('.seq-col span')
+               .text(seq);
+
+        $(this).find('.sequence-no')
+               .val(seq)
+               .attr('name', `route[${index}][sequence_no]`);
+
+        // Activity
+        $(this).find('.activity-label')
+               .text(activity);
+
+        $(this).find('.activity-type')
+               .val(activity)
+               .attr('name', `route[${index}][activity_type]`);
+
+        // Organization
+        $(this).find('.organization-program')
+               .attr('name', `route[${index}][organization_program_id]`);
+
+        // Departure
+        $(this).find('.departure')
+               .attr('name', `route[${index}][departure_at]`);
+
+        // Arrival
+        $(this).find('.arrival')
+               .attr('name', `route[${index}][arrival_at]`);
+
+        // Tombol Delete
+        if (activity === 'DROPOFF') {
+
+            $(this).find('.btnDelete')
+                .prop('disabled', true)
+                .removeClass('btn-danger')
+                .addClass('btn-secondary');
+
+        } else {
+
+            $(this).find('.btnDelete')
+                .prop('disabled', false)
+                .removeClass('btn-secondary')
+                .addClass('btn-danger');
+
+        }
+
     });
 
-    $('#shipmentForm').submit(function(e) {
-        e.preventDefault();
+}
 
-        let formData = $(this).serialize();
+function initRow(scope){
 
-        console.log(formData);
-        Swal.fire({
-            title: 'Please Wait...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
+    scope.find('.select2-route').select2({
+        width:'100%'
+    });
 
-        $.ajax({
-            url: "<?= base_url('/shipment/saveedit/'.$edit['shipment_id']); ?>",
-            type: "POST",
-            data: $(this).serialize(),
-            dataType: "json",
-            success: function(response) {
-                console.log(response);
-                console.log(typeof response); 
-                if (response.success == true) {
+    scope.find('.departure').datepicker({
+        showOtherMonths:true,
+        selectOtherMonths:true,
+        dateFormat:'yy-mm-dd'
+    });
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message
-                    }).then(() => {
-                        window.location.href = "<?= base_url('/Shipment'); ?>";
-                    });
+    scope.find('.arrival').datepicker({
+        showOtherMonths:true,
+        selectOtherMonths:true,
+        dateFormat:'yy-mm-dd'
+    });
 
-                } else {
+}
 
-                    let errorMsg = '';
+$(function(){
 
-                    $.each(response.message, function(key, value) {
-                        errorMsg += value + '<br>';
-                    });
+    initRow($(document));
 
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        html: errorMsg
-                    });
+    resetRoute();
 
-                }
+});
 
-            },
-            error: function() {
+$('#shipmentForm').submit(function(e) {
+    e.preventDefault();
+
+    let formData = $(this).serialize();
+
+    Swal.fire({
+        title: 'Please Wait...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    $.ajax({
+        url: "<?= base_url('/shipment/updateCollection/'.$shipment['shipment_id']); ?>",
+        type: "POST",
+        data: $(this).serialize(),
+        dataType: "json",
+        success: function(response) {
+            
+            if (response.status == true) {
 
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Internal Server Error'
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message
+                }).then(() => {
+                    window.location.href = "<?= base_url('/Shipment'); ?>";
                 });
 
-            }
-        });
+            } else {
 
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Validation',
+                    text: response.message
+                });
+
+                return;
+
+            }
+
+        },
+        error: function() {
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Internal Server Error'
+            });
+
+        }
     });
 
 });
+
+$(document).on('click', '.btnDelete', function () {
+
+    let row = $(this).closest('tr');
+
+    if (row.find('.activity-type').val() === 'DROPOFF') {
+        return;
+    }
+
+    row.remove();
+
+    resetRoute();
+
+});
+
 
 </script>

@@ -235,7 +235,7 @@ $(document).on('click', '.btnDetail', function () {
 
             $("#loadingDetail").hide();
 
-            $("#detailShipment").html(`
+            $("#detailOrgzContent").html(`
                 <div class="alert alert-danger">
                     Failed to load company detail.
                 </div>
