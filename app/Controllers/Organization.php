@@ -143,9 +143,12 @@ class Organization extends BaseController
             {
                 $this->db->transRollback();
 
+                $error = $this->db->error();
+
                 return $this->response->setJSON([
                     'status'  => false,
-                    'message' => 'Gagal menyimpan data.'
+                    'message' => 'Gagal menyimpan data.',
+                    'code'    => $error['code'],
                 ]);
             }
 

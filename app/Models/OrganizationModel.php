@@ -11,6 +11,7 @@ class OrganizationModel extends Model
 
     protected $allowedFields = [
         'organization_type_id',
+        'organization_code',
         'organization_name',
         'pic_name',
         'state',
