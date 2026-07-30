@@ -4,12 +4,14 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\VehicleModel;
-use App\Models\CompanyModel;
+use App\Models\OrganizationModel;
+use App\Models\WareHouseModel;
 
 class Vehicle extends BaseController
 {
     protected VehicleModel $vehicle;
-    protected CompanyModel $company;
+    protected organizationModel $organization;
+    protected WareHouseModel $warehouse;
 
     public function __construct()
     {
@@ -21,7 +23,8 @@ class Vehicle extends BaseController
         }
 
         $this->vehicle = new VehicleModel();
-        $this->company = new CompanyModel();
+        $this->organization = new OrganizationModel();
+        $this->warehouse = new WareHouseModel();
     }
 
     public function index()
@@ -33,78 +36,90 @@ class Vehicle extends BaseController
 
     public function create()
     {
-        if ($this->request->getMethod() === 'post') {
+        $dataWarehouse = $this->warehouse->dataWarehouse();
 
-            $rules = [
-                'company_program_id' => [
-                    'rules'  => 'required|integer',
-                    'errors' => [
-                        'required' => 'Company Program must be selected'
-                    ]
-                ],
-                'plate_number' => [
-                    'rules'  => 'required|is_unique[vehicle.plate_number]',
-                    'errors' => [
-                        'required'  => 'License plate number is required',
-                        'is_unique' => 'Police number is already in use'
-                    ]
-                ],
-                'vehicle_type' => [
-                    'rules'  => 'required',
-                    'errors' => [
-                        'required' => 'Vehicle type is required'
-                    ]
-                ],
-                'status' => [
-                    'rules'  => 'required',
-                    'errors' => [
-                        'required' => 'Status is required to be selected'
-                    ]
-                ]
-            ];
-
-            if (!$this->validate($rules)) {
-                return $this->response->setJSON([
-                    'status' => false,
-                    'errors' => $this->validator->getErrors()
-                ]);
-            }
-
-            $this->vehicle->insert([
-                'company_program_id'=> $this->request->getPost('company_program_id'),
-                'plate_number'      => strtoupper($this->request->getPost('plate_number')),
-                'vehicle_type'      => $this->request->getPost('vehicle_type'),
-                'capacity_weight'   => $this->request->getPost('capacity_weight'),
-                'capacity_volume'   => $this->request->getPost('capacity_volume'),
-                'brand'             => $this->request->getPost('brand'),
-                'stnk_expiry_date'  => $this->request->getPost('stnk_expiry_date'),
-                'kir_expiry_date'   => $this->request->getPost('kir_expiry_date'),
-                'status'            => $this->request->getPost('status'),
-                'created_date'      => date('Y-m-d H:i:s'),
-                'modified_date'     => date('Y-m-d H:i:s'),
-                'created_by'        => session()->get('user_id')
-            ]);
-
-            return $this->response->setJSON([
-                'status'   => true,
-                'message'  => 'Data kendaraan berhasil disimpan',
-                'redirect' => base_url('/Vehicle')
-            ]);
-        }
-
-        $dataCompany = $this->db->table('company_program a')
-            ->select('b.company_id, a.company_program_id, d.type_id, b.company_name')
-            ->join('company b', 'a.company_id = b.company_id')
+        $dataOrganization = $this->db->table('organization_program a')
+            ->select('b.organization_id, a.organization_program_id, d.organization_type_id, b.organization_name')
+            ->join('organization b', 'a.organization_id = b.organization_id')
             ->join('program c', 'a.program_id = c.program_id')
-            ->join('companytype d', 'a.company_type_id = d.type_id')
+            ->join('organization_type d', 'a.organization_type_id = d.organization_type_id')
             ->get()->getResultArray();
 
        $data = [
             'title' => 'Vehicle',
-            'company' => $dataCompany
+            'organization' => $dataOrganization,
+            'warehouse' => $dataWarehouse
         ];
 
         return view('vehicle/create', $data);
+    }
+
+    public function save()
+    {
+        // var_dump($this->request->getPost());exit;
+        $rules = [
+            'organization_program_id' => [
+                'rules' => 'permit_empty|exclusiveRequired[organization_program_id,warehouse_id]',
+            ],
+
+            'warehouse_id' => [
+                'rules' => 'permit_empty',
+            ],
+
+            'organization_program_id' => [ // atau bisa ditaruh di salah satu field
+                'rules' => 'permit_empty|integer|callback_check_exclusive[warehouse_id]',
+            ],
+
+            'plate_number' => [
+                'rules'  => 'required|is_unique[vehicle.plate_number]',
+                'errors' => [
+                    'required'  => 'License plate number is required',
+                    'is_unique' => 'Police number is already in use'
+                ]
+            ],
+            'vehicle_type' => [
+                'rules'  => 'required',
+                'errors' => [
+                    'required' => 'Vehicle type is required'
+                ]
+            ],
+            'status' => [
+                'rules'  => 'required',
+                'errors' => [
+                    'required' => 'Status is required to be selected'
+                ]
+            ]
+        ];
+
+        if (!$this->validate($rules)) {
+            return $this->response->setJSON([
+                'status' => false,
+                'errors' => $this->validator->getErrors()
+            ]);
+        }
+
+        $this->vehicle->insert([
+            'organization_program_id'=> $this->request->getPost('organization_program_id') ? : null,
+            'warehouse_id'           => $this->request->getPost('warehouse_id') ? : null,
+            'plate_number'           => strtoupper($this->request->getPost('plate_number')),
+            'vehicle_type'           => $this->request->getPost('vehicle_type'),
+            'capacity_weight'        => $this->request->getPost('capacity_weight'),
+            'capacity_volume'        => $this->request->getPost('capacity_volume'),
+            'brand'                  => $this->request->getPost('brand'),
+            'stnk_expiry_date'       => $this->request->getPost('stnk_expiry_date'),
+            'kir_expiry_date'        => $this->request->getPost('kir_expiry_date'),
+            'status'                 => $this->request->getPost('status'),
+            'created_date'           => date('Y-m-d H:i:s'),
+            'modified_date'          => date('Y-m-d H:i:s'),
+            'created_by'             => session()->get('users_id')
+        ]);
+
+        return $this->response->setJSON([
+            'status'   => true,
+            'message'  => 'Data kendaraan berhasil disimpan',
+            'redirect' => base_url('Vehicle')
+        ]);
+    
     }
 
     public function datatables()
@@ -116,25 +131,29 @@ class Vehicle extends BaseController
         $length = $request->getPost('length');
         $search = $request->getPost('search')['value'] ?? '';
 
+        $program_id = session()->get('program');
+
         $baseQuery = "
             FROM vehicle a
-            JOIN company_program b
-                ON a.company_program_id = b.company_program_id
-            JOIN program c
+            LEFT JOIN organization_program b
+                ON a.organization_program_id = b.organization_program_id
+            LEFT JOIN program c
                 ON b.program_id = c.program_id
-            JOIN company d
-                ON b.company_id = d.company_id
-            WHERE 1=1
+            LEFT JOIN organization d
+                ON b.organization_id = d.organization_id
+            LEFT JOIN warehouse w 
+                ON a.warehouse_id = w.warehouse_id
+            WHERE COALESCE(b.program_id, w.program_id) = ?
         ";
 
         $filter = "";
-        $params = [];
+        $params = [$program_id];
 
         if (!empty($search)) {
 
             $filter .= "
                 AND (
-                    d.company_name LIKE ?
+                    d.organization_name LIKE ?
                     OR a.plate_number LIKE ?
                     OR a.vehicle_type LIKE ?
                     OR a.brand LIKE ?
@@ -152,7 +171,7 @@ class Vehicle extends BaseController
         }
 
         $totalRecords = $this->db
-            ->query("SELECT COUNT(*) cnt {$baseQuery}")
+            ->query("SELECT COUNT(*) cnt {$baseQuery}",[$program_id])
             ->getRow()
             ->cnt;
 
@@ -170,7 +189,8 @@ class Vehicle extends BaseController
         }
 
         $orderColumn = [
-            'd.company_name',
+            'd.organization_name',
+            'w.warehouse_name',
             'a.plate_number',
             'a.vehicle_type',
             'a.brand',
@@ -190,8 +210,9 @@ class Vehicle extends BaseController
         $sql = "
             SELECT
                 a.*,
-                d.company_name,
-                c.name AS program_name
+                d.organization_name,
+                c.name AS program_name,
+                w.warehouse_name
             {$baseQuery}
             {$filter}
             ORDER BY {$orderBy} {$orderDirection}
@@ -231,7 +252,7 @@ class Vehicle extends BaseController
                     <i class="fa fa-eye"></i>
                 </a>
 
-                <a href="'.base_url().'/Vehicle/edit/'.$row['vehicle_id'].'"
+                <a href="'.base_url().'Vehicle/edit/'.$row['vehicle_id'].'"
                 class="btn btn-cyan btn-sm text-white mb-2 mb-xl-1"  data-toggle="tooltip" data-original-title="Edit">
                     <i class="fa fa-pencil"></i>
                 </a>
@@ -264,28 +285,33 @@ class Vehicle extends BaseController
 
     public function edit($id)
     {
-        if ($this->request->getMethod() === 'get') {
-            $dataCompany = $this->company->datacompany();
-            $datavehicle = $this->vehicle->getDataVehicle($id);
-            // var_dump($datavehicle);exit;
-            $data = [
-                'title' => 'Vehicle Detail',
-                'vehicle' => $datavehicle,
-                'company' => $dataCompany
-            ];
-    
-            return view(
-                'vehicle/edit', $data
-            );
-        }
+        $dataOrganization = $this->organization->getDataOrg();
+        $dataWarehouse = $this->warehouse->dataWarehouse(); 
+        $datavehicle = $this->vehicle->getDataVehicle($id);
+        // var_dump($datavehicle);exit;
+        $data = [
+            'title' => 'Vehicle Detail',
+            'vehicle' => $datavehicle,
+            'organization' => $dataOrganization,
+            'warehouse' => $dataWarehouse
+        ];
 
+        return view(
+            'vehicle/edit', $data
+        );
+    }
+
+    public function saveedit($id)
+    { 
         $rules = [
-            'company_program_id' => [
-                'rules'  => 'required|integer',
-                'errors' => [
-                    'required' => 'Company Program must be selected'
-                ]
+            'organization_program_id' => [
+                'rules' => 'permit_empty|exclusiveRequired[organization_program_id,warehouse_id]',
             ],
+
+            'warehouse_id' => [
+                'rules' => 'permit_empty',
+            ],
+
             'plate_number' => [
                 'rules'  => 'required',
                 'errors' => [
@@ -324,7 +350,8 @@ class Vehicle extends BaseController
             }
             
             $fields = [
-                'company_program_id',
+                'organization_program_id',
+                'warehouse_id',
                 'plate_number',
                 'vehicle_type',
                 'brand',

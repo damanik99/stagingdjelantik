@@ -68,13 +68,16 @@ class Warehouse extends BaseController
         $length = $request->getPost('length');
         $search = $request->getPost('search')['value'] ?? '';
 
+        $program_id = session()->get('program');
+
         $baseQuery = "
             FROM warehouse a
-            WHERE a.is_deleted = 0
+            JOIN program b ON a.program_id = b.program_id
+            WHERE a.is_deleted = 0 AND a.program_id = ?
         ";
 
         $filter = "";
-        $params = [];
+        $params = [$program_id];
 
         if (!empty($search)) {
 
@@ -92,9 +95,7 @@ class Warehouse extends BaseController
         }
 
         $totalRecords = $this->db
-            ->query(
-                "SELECT COUNT(*) cnt {$baseQuery}"
-            )
+            ->query("SELECT COUNT(*) cnt {$baseQuery}", [$program_id])
             ->getRow()
             ->cnt;
 

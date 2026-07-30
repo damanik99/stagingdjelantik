@@ -13,7 +13,8 @@
 <!-- LAYOUT BODY -->
 <?php /** @var array<string, mixed> $vehicle */ ?>
 <?php /** @var string $title */ ?>
-<?php /** @var array $company */ ?>
+<?php /** @var array $organization */ ?>
+<?php /** @var array $warehouse */ ?>
 <div class="app-content">
     <div class="side-app">
 
@@ -39,24 +40,41 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label">Company <span class="text-danger">*</span></label>
-                                        <select name="company_program_id" class="form-control select2-show-search">
-                                            <option value="">Choose Company</option>
-                                            <?php foreach ($company as $row) : ?>
-                                                <option value="<?= $row['company_program_id']; ?>" 
-                                                <?= $row['company_program_id'] == $vehicle['company_program_id'] ? 'selected' : ''; ?>>
-                                                    <?= $row['company_name']; ?>
+                                        <label class="form-label">Organization <span class="text-danger">*</span></label>
+                                        <select name="organization_program_id" class="form-control select2-show-search">
+                                            <option value="">-- Select Orgnization --</option>
+                                            <?php foreach ($organization as $row) : ?>
+                                                <option value="<?= $row['organization_program_id']; ?>" 
+                                                <?= $row['organization_program_id'] == $vehicle['organization_program_id'] ? 'selected' : ''; ?>>
+                                                    <?= $row['organization_name']; ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
                                 </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Warehouse</span></label>
+                                        <select name="warehouse_id" class="form-control select2-show-search">
+                                            <option value="">-- Select Warehouse--</option>
+                                            <?php foreach ($warehouse as $row) : ?>
+                                                <option value="<?= $row['warehouse_id']; ?>"
+                                                <?= $row['warehouse_id'] == $vehicle['warehouse_id'] ? 'selected' : ''; ?>>
+                                                    <?= $row['warehouse_name']; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Plate Number <span class="text-danger">*</span></label>
                                         <input class="form-control" type="text" name="plate_number" value="<?= $vehicle['plate_number']  ?>">
                                     </div>
                                 </div>
+
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Vehicle Type <span class="text-danger">*</span></label>
@@ -67,18 +85,21 @@
                                         </select>
                                     </div>
                                 </div>
+
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Merk</label>
                                         <input class="form-control" type="text" name="brand" value="<?= $vehicle['brand']  ?>">
                                     </div>
                                 </div>
+
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Capacity Weight</label>
                                         <input class="form-control" type="number" step="0.01" name="capacity_weight" value="<?= $vehicle['capacity_weight']  ?>">
                                     </div>
                                 </div>
+
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Capacity Volume</label>
@@ -114,7 +135,7 @@
                             </div>
 
                             <div class="form-actions text-center mt-5">
-                                <a class="btn btn-default-light" href="<?= base_url() ?>/Vehicle">
+                                <a class="btn btn-default-light" href="<?= base_url() ?>Vehicle">
                                     <i class="fa fa-window-close"></i> Cancel
                                 </a>
 
@@ -152,7 +173,7 @@ $('#vehicleEdit').submit(function(e) {
 
     $.ajax({
 
-        url : '<?= base_url('/vehicle/edit/'.$vehicle['vehicle_id']); ?>',
+        url : '<?= base_url('/vehicle/saveedit/'.$vehicle['vehicle_id']); ?>',
         type : 'POST',
         data : $(this).serialize(),
         dataType : 'json',
@@ -185,7 +206,7 @@ $('#vehicleEdit').submit(function(e) {
                     text: response.message
                 }).then(function(){
 
-                    window.location.href = '<?= base_url('/Vehicle'); ?>';
+                    window.location.href = '<?= base_url('Vehicle'); ?>';
 
                 });
 

@@ -12,7 +12,8 @@ class VehicleModel extends Model
     protected $useSoftDeletes   = false;
 
     protected $allowedFields = [
-        'company_program_id',
+        'organization_program_id',
+        'warehouse_id',
         'plate_number',
         'vehicle_type',
         'capacity_weight',
@@ -32,9 +33,9 @@ class VehicleModel extends Model
     public function getDataVehicle($id)
     {
         $data = $this->db->table('vehicle a')
-                ->select('a.*, c.company_name')
-                ->join('company_program b', 'a.company_program_id = b.company_program_id')
-                ->join('company c', 'b.company_id = c.company_id')
+                ->select('a.*, c.organization_name')
+                ->join('organization_program b', 'a.organization_program_id = b.organization_program_id')
+                ->join('organization c', 'b.organization_id = c.organization_id')
                 ->where('a.vehicle_id', $id)
                 ->get()->getRowArray();
 

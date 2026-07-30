@@ -28,7 +28,7 @@
                 <h1 class="page-title">Data Vehicle</h1>
             </div>
             <div class="ml-auto pageheader-btn">
-                <a href="<?=base_url()?>/Vehicle/create" class="btn btn-success-light btn-icon mr-2">
+                <a href="<?=base_url()?>Vehicle/create" class="btn btn-success-light btn-icon mr-2">
                     <span>
                         <i class="fa fa-plus mr-2"></i>
                     </span> Create New
@@ -46,7 +46,8 @@
                             <table id="vehicleTable" class="table table-striped table-bordered text-nowrap w-100">
                                 <thead>
                                     <tr>
-                                        <th>Company</th>
+                                        <th>Organization</th>
+                                        <th>Warhouse</th>
                                         <th>Plate Number</th>
                                         <th>Vehicle Type</th>
                                         <th>Mer</th>
@@ -125,7 +126,8 @@
             ],
 
             columns: [
-                { data: "company_name" },
+                { data: "organization_name" },
+                { data: "warehouse_name" },
                 { data: "plate_number" },
                 { data: "vehicle_type" },
                 { data: "brand" },

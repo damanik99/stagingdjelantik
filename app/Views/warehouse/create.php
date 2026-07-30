@@ -62,16 +62,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Address -->
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label class="form-label">
-                                            Address
-                                        </label>
-                                        <textarea class="form-control" rows="4" name="address" placeholder="Warehouse Address"></textarea>
-                                    </div>
-                                </div>
-
                                 <!-- Latitude -->
                                 <div class="col-md-6">
                                     <div class="form-group">
@@ -92,8 +82,18 @@
                                     </div>
                                 </div>
 
+                                 <!-- Address -->
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            Address
+                                        </label>
+                                        <textarea class="form-control" rows="4" name="address" placeholder="Warehouse Address"></textarea>
+                                    </div>
+                                </div>
+
                                 <!-- Status -->
-                                <div class="col-md-4">
+                                <div class="col-md-12">
                                     <div class="form-group">
                                         <label class="form-label">
                                             Status
@@ -109,10 +109,11 @@
                                         </select>
                                     </div>
                                 </div>
+                                
                             </div>
 
                             <div class="text-center mt-4">
-                                <a href="<?= base_url() ?>/Warehouse" class="btn btn-default-light btn-icon mr-2">
+                                <a href="<?= base_url() ?>Warehouse" class="btn btn-default-light btn-icon mr-2">
                                     <i class="fa fa-window-close"></i> Cancel
                                 </a>
                                 <button type="submit" class="btn btn-teal btn-icon mr-2">

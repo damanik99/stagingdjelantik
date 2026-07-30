@@ -19,7 +19,8 @@
 
 <?php /** 
  * @var string $title 
- * @var array $company 
+ * @var array $organization 
+ * @var array $warehouse 
  * */ ?>
 
 <div class="app-content">
@@ -47,17 +48,31 @@
 
                 <div class="card">
                     <div class="card-status bg-teal br-tr-7 br-tl-7"></div>
-                    <form id="vehicleForm" action="<?= base_url('/vehicle/create'); ?>" method="post">
+                    <form id="vehicleForm" action="<?= base_url('vehicle/save'); ?>" method="post">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label">Company <span class="text-danger">*</span></label>
-                                        <select name="company_program_id" class="form-control select2-show-search">
-                                            <option value="">Choose Company</option>
-                                            <?php foreach ($company as $row) : ?>
-                                                <option value="<?= $row['company_program_id']; ?>">
-                                                    <?= $row['company_name']; ?>
+                                        <label class="form-label">Organization</label>
+                                        <select name="organization_program_id" class="form-control select2-show-search">
+                                            <option value="">-- Select Organization--</option>
+                                            <?php foreach ($organization as $row) : ?>
+                                                <option value="<?= $row['organization_program_id']; ?>">
+                                                    <?= $row['organization_name']; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Warehouse</span></label>
+                                        <select name="warehouse_id" class="form-control select2-show-search">
+                                            <option value="">-- Select Warehouse--</option>
+                                            <?php foreach ($warehouse as $row) : ?>
+                                                <option value="<?= $row['warehouse_id']; ?>">
+                                                    <?= $row['warehouse_name']; ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
