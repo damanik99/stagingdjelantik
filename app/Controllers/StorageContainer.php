@@ -36,7 +36,7 @@ class StorageContainer extends BaseController
             'title' => $title,
         ];
 
-        echo view('StorageContainer/index', $data);
+        echo view('storagecontainer/index', $data);
     }
 
     public function create()
