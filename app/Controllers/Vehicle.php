@@ -5,13 +5,13 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\VehicleModel;
 use App\Models\OrganizationModel;
-use App\Models\WareHouseModel;
+use App\Models\WarehouseModel;
 
 class Vehicle extends BaseController
 {
     protected VehicleModel $vehicle;
     protected organizationModel $organization;
-    protected WareHouseModel $warehouse;
+    protected WarehouseModel $warehouse;
 
     public function __construct()
     {
@@ -24,7 +24,7 @@ class Vehicle extends BaseController
 
         $this->vehicle = new VehicleModel();
         $this->organization = new OrganizationModel();
-        $this->warehouse = new WareHouseModel();
+        $this->warehouse = new WarehouseModel();
     }
 
     public function index()
