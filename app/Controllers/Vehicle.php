@@ -303,6 +303,8 @@ class Vehicle extends BaseController
 
     public function saveedit($id)
     { 
+        $vehicleUpdate = new VehicleModel();
+
         $rules = [
             'organization_program_id' => [
                 'rules' => 'permit_empty|exclusiveRequired[organization_program_id,warehouse_id]',
@@ -339,57 +341,43 @@ class Vehicle extends BaseController
             ]);
         }
 
-        $db = db_connect();
-        $db->transBegin();
+        $this->db->transBegin();
+
         try {
 
-            $vehicle = $this->vehicle->find($id);
-            
-            if (!$vehicle) {
-                throw new \Exception('vehicle not found.');
-            }
-            
-            $fields = [
-                'organization_program_id',
-                'warehouse_id',
-                'plate_number',
-                'vehicle_type',
-                'brand',
-                'capacity_weight',
-                'capacity_volume',
-                'stnk_expiry_date',
-                'kir_expiry_date',
-                'status',
-            ];
+            $vehicleUpdate->update($id, [
+                'organization_program_id' => $this->request->getPost('organization_program_id'),
+                'warehouse_id' => $this->request->getPost('warehouse_id'),
+                'plate_number' => $this->request->getPost('plate_number'),
+                'vehicle_type' => $this->request->getPost('vehicle_type'),
+                'brand' => $this->request->getPost('brand'),
+                'capacity_weight' => $this->request->getPost('capacity_weight'),
+                'capacity_volume' => $this->request->getPost('capacity_volume'),
+                'stnk_expiry_date' => $this->request->getPost('stnk_expiry_date'),
+                'kir_expiry_date' => $this->request->getPost('kir_expiry_date'),
+                'status' => $this->request->getPost('status'),
+            ]);
 
-            $updateData = [];
-            foreach ($fields as $field) {
+            if ($this->db->transStatus() === false) {
 
-                $newValue = $this->request->getPost($field);
-                // var_dump($newValue);exit;
-                if ((string)$vehicle[$field] !== (string)$newValue) {
-                    $updateData[$field] = $newValue;
-                }
+                $this->db->transRollback();
+
+                return $this->response->setJSON([
+                    'status'  => false,
+                    'message' => 'Failed to update Vehicle.'
+                ]);
             }
 
-            if (!empty($updateData)) {
-
-                $updateData['modified_by'] = session()->get('user_id');
-
-                $this->vehicle->update($id, $updateData);
-            }
-
-            $db->transCommit();
+            $this->db->transCommit();
 
             return $this->response->setJSON([
                 'status'  => true,
-                'message' => 'Company successfully updated.'
+                'message' => 'Vehicle successfully updated.'
             ]);
 
         } catch (\Throwable $e) {
             
-           $db->transRollback();
-
+           $this->db->transRollback();
             throw $e;
         }
 

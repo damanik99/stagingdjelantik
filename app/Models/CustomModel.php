@@ -17,7 +17,7 @@ class CustomModel extends Model
 
 	protected $_model;
 
-    public function setIdRandomString($model, $column, $length, $type, $string = '')
+    public function setIdRandomString($model, $column, $length, $type, $code, $string = '')
 	{	
 		if($type == "Number")
 			$characters = '0123456789';
@@ -33,13 +33,13 @@ class CustomModel extends Model
             $customstring .= $characters[rand(0, strlen($characters) - 1)];
         }
             
-        $random = $string.$customstring;
+        $random = $code.$string.$customstring;
 
         $this->_model = $this->db->table($model)->select('*')->where($column, $random)->get()->getResultArray();
-		
+
         if($this->_model)
         {
-            return $this->setIdRandomString($model, $column, $length, $string);
+            return $this->setIdRandomString($model, $column, $length, $code, $string);
         }
         else
 		{

@@ -3,68 +3,48 @@
 <!-- MAIN END -->
 
 <!-- CSS -->
-
-<!-- INTERNAL  FILE UPLODE CSS -->
-<link href="<?= base_url() ?>/teamplate/assets/plugins/fileuploads/css/fileupload.css" rel="stylesheet"
-    type="text/css" />
-
-<!-- INTERNAL SELECT2 CSS -->
 <link href="<?= base_url() ?>/teamplate/assets/plugins/select2/select2.min.css" rel="stylesheet" />
-
 <!-- CSS END -->
 
 <!-- LAYOUT BODY -->
 <?= $this->include('layout/body') ?>
 <!-- LAYOUT BODY -->
 
-<?php /** 
- * @var string $title 
- * @var array $warehouse 
- * @var array $containertype
- * @var string $containercode
- * @var array $status
- * */ ?>
+<?php /** @var array<string, mixed> $container */ ?>
+<?php /** @var array $warehouse */ ?>
+<?php /** @var array $containertype */ ?>
+<?php /** @var array $status */ ?>
 
 <div class="app-content">
     <div class="side-app">
-
-        <!-- PAGE HEADER -->
         <div class="page-header">
             <div>
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="<?= base_url() ?>StorageContainer">Storage Container</a>
-                    </li>
-                    <li class="breadcrumb-item active">
-                        Create
-                    </li>
+                    <li class="breadcrumb-item"><a href="<?= base_url() ?>StorageContainer">Storage Container</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit</li>
                 </ol>
-                <h1 class="page-title">Create Storage Container</h1>
+                <h1 class="page-title">Edit Storage Container</h1>
             </div>
         </div>
-        <!-- PAGE HEADER END -->
 
         <div class="row">
-
             <div class="col-md-12">
-
                 <div class="card">
                     <div class="card-status bg-teal br-tr-7 br-tl-7"></div>
-                    <form id="storageContainerForm" action="<?= base_url('/StorageContainer/save'); ?>" method="post">
+                    <form id="storageContainerEdit" method="post">
                         <div class="card-body">
                             <div class="row">
-
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label class="form-label">Container Code</label>
-                                        <input type="text" name="container_code" class="form-control" value="<?= $containercode; ?>" readonly>
+                                        <input type="text" name="container_code" class="form-control" value="<?= esc($container['container_code']); ?>">
                                     </div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Container Name <span class="text-danger">*</span></label>
-                                        <input type="text" name="container_name" class="form-control" id="container_name" required>
+                                        <input type="text" name="container_name" class="form-control" id="container_name" value="<?= esc($container['container_name']); ?>" required>
                                     </div>
                                 </div>
 
@@ -74,8 +54,8 @@
                                         <select name="container_type_id" class="form-control select2-show-search" required>
                                             <option value="">-- Select Container --</option>
                                             <?php foreach ($containertype as $row) : ?>
-                                                <option value="<?= $row['container_type_id']; ?>">
-                                                    <?= $row['container_type_name']; ?>
+                                                <option value="<?= $row['container_type_id']; ?>" <?= ($container['container_type_id'] == $row['container_type_id'] ? 'selected' : '') ?>>
+                                                    <?= esc($row['container_type_name']); ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
@@ -85,11 +65,11 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Warehouse <span class="text-danger">*</span></label>
-                                        <select name="warehouse_id" class="form-control select2-show-search">
+                                        <select name="warehouse_id" class="form-control select2-show-search" required>
                                             <option value="">-- Select Warehouse --</option>
                                             <?php foreach ($warehouse as $row) : ?>
-                                                <option value="<?= $row['warehouse_id']; ?>">
-                                                    <?= $row['warehouse_name']; ?>
+                                                <option value="<?= $row['warehouse_id']; ?>" <?= ($container['warehouse_id'] == $row['warehouse_id'] ? 'selected' : '') ?>>
+                                                    <?= esc($row['warehouse_name']); ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
@@ -99,7 +79,7 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label class="form-label">Capacity <span class="text-danger">*</span></label>
-                                        <input type="text" name="capacity" class="form-control" required>
+                                        <input type="text" name="capacity" class="form-control" value="<?= esc($container['capacity']); ?>" required>
                                     </div>
                                 </div>
 
@@ -108,33 +88,32 @@
                                         <label class="form-label">Unit <span class="text-danger">*</span></label>
                                         <select name="capacity_unit" class="form-control" required>
                                             <option value="">-- Select Unit --</option>
-                                            <option value="kg">Kg</option>
-                                            <option value="liter">Liter</option>
+                                            <option value="kg" <?= (strtolower($container['capacity_unit']) === 'kg' ? 'selected' : '') ?>>Kg</option>
+                                            <option value="liter" <?= (strtolower($container['capacity_unit']) === 'liter' ? 'selected' : '') ?>>Liter</option>
                                         </select>
                                     </div>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="form-group">
                                         <label class="form-label">Status <span class="text-danger">*</span></label>
-                                        <select name="capacity_unit" class="form-control" required>
-                                            <option value="">--Select Status--</option>
-                                        <?php foreach ($status as $row) : ?>
-                                            <option value="<?= $row['status_id']; ?>">
-                                                <?= $row['status_name']; ?>
-                                            </option>
-                                        <?php endforeach; ?>
+                                        <select name="status" class="form-control" required>
+                                            <option value="">-- Select Status --</option>
+                                            <?php foreach ($status as $row) : ?>
+                                                <option value="<?= $row['status_id']; ?>" <?= ($container['status_id'] == $row['status_id'] ? 'selected' : '') ?>>
+                                                    <?= esc($row['status_name']); ?>
+                                                </option>
+                                            <?php endforeach; ?>
                                         </select>
                                     </div>
                                 </div>
 
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <label class="form-label">Note <span class="text-danger">*</span></label>
-                                        <textarea name="" class="form-control"></textarea>
+                                        <label class="form-label">Note</label>
+                                        <textarea name="note" class="form-control" rows="4"><?= esc($container['note'] ?? ''); ?></textarea>
                                     </div>
                                 </div>
-
                             </div>
 
                             <div class="text-center mt-5">
@@ -142,12 +121,11 @@
                                     <i class="fa fa-window-close"></i>
                                     Cancel
                                 </a>
-                                <button type="submit" class="btn btn-teal">
+                                <button type="submit" class="btn btn-teal" id="submitBtn">
                                     <i class="fa fa-save"></i>
                                     Save
-                                </button>                                
+                                </button>
                             </div>
-
                         </div>
                     </form>
                 </div>
@@ -160,27 +138,8 @@
 <?= $this->include('layout/footers') ?>
 <!-- FOOTER END -->
 
-<!--INTERNAL  FORMELEMENTS JS -->
 <script src="<?= base_url() ?>/teamplate/assets/js/select2.js"></script>
-
-<!-- INTERNAL SELECT2 JS -->
 <script src="<?= base_url() ?>/teamplate/assets/plugins/select2/select2.full.min.js"></script>
-
-<script src="<?= base_url() ?>/teamplate/assets/plugins/date-picker/spectrum.js"></script>
-<script src="<?= base_url() ?>/teamplate/assets/plugins/date-picker/jquery-ui.js"></script>
-<script src="<?= base_url() ?>/teamplate/assets/plugins/input-mask/jquery.maskedinput.js"></script>
-
-<!-- INTERNAL  FILE UPLOADES JS -->
-<script src="<?= base_url() ?>/teamplate/assets/plugins/fileuploads/js/fileupload.js"></script>
-<script src="<?= base_url() ?>/teamplate/assets/plugins/fileuploads/js/file-upload.js"></script>
-
-<!-- INTERNAL ACCORDION JS -->
-<script src="<?= base_url() ?>/teamplate/assets/plugins/accordion/accordion.min.js"></script>
-<script src="<?= base_url() ?>/teamplate/assets/plugins/accordion/accordion.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
-<!-- SWEET ALERT -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
@@ -188,67 +147,66 @@ $('#container_name').on('input', function () {
     this.value = this.value.toUpperCase();
 });
 
-$(document).ready(function() {
+$('#storageContainerEdit').on('submit', function(e) {
+    e.preventDefault();
 
-    $('#storageContainerForm').submit(function(e) {
+    const formData = new FormData(this);
+    const payload = Object.fromEntries(formData.entries());
 
-        e.preventDefault();
+    $.ajax({
+        url: '<?= base_url('/StorageContainer/update/'.$container['storage_container_id']); ?>',
+        type: 'POST',
+        data: JSON.stringify(payload),
+        contentType: 'application/json',
+        dataType: 'json',
+        beforeSend: function() {
+            $('#submitBtn').prop('disabled', true);
+            Swal.fire({
+                title: 'Processing...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+        },
+        success: function(response) {
+            $('#submitBtn').prop('disabled', false);
+            Swal.close();
 
-        $.ajax({
-            url: $(this).attr('action'),
-            type: 'POST',
-            data: new FormData(this),
-            processData: false,
-            contentType: false,
-
-            beforeSend: function() {
+            if (response.status) {
                 Swal.fire({
-                    title: 'Please Wait...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message
+                }).then(() => {
+                    window.location.href = '<?= base_url('/StorageContainer'); ?>';
                 });
-            },
+                return;
+            }
 
-            success: function(response) {
+            let msg = response.message || 'Validation Error';
 
-                if (response.status == true) {
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message
-                    }).then(() => {
-                        window.location.href = "<?= base_url('StorageContainer') ?>";
-                    });
-
-                } else {
-
-                    let errorMsg = '';
-
-                    $.each(response.errors, function(key, value) {
-                        errorMsg += value + '<br>';
-                    });
-
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Validation Error',
-                        html: errorMsg
-                    });
-                }
-            },
-
-            error: function() {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Internal Server Error'
+            if (response.errors) {
+                msg = '';
+                $.each(response.errors, function(key, value) {
+                    msg += value + '<br>';
                 });
             }
-        });
 
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                html: msg
+            });
+        },
+        error: function(xhr) {
+            $('#submitBtn').prop('disabled', false);
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Internal Server Error'
+            });
+            console.log(xhr.responseText);
+        }
     });
-
 });
 </script>

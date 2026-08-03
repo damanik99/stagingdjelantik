@@ -9,7 +9,6 @@ class StatusModel extends Model
     protected $table            = 'status';
     protected $primaryKey       = 'status_id';
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
 
     protected $allowedFields = [

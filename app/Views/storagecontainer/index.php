@@ -68,14 +68,14 @@
                     <div class="card-status bg-teal br-tr-7 br-tl-7"></div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table id="shipmentTable" class="table table-bordered border-t0 key-buttons text-nowrap w-100">
+                            <table id="storageTable" class="table table-bordered border-t0 key-buttons text-nowrap w-100">
                                  <thead>
                                     <tr>
-                                        <th>Shipment No</th>
-                                        <th>Shipment Type</th>
-                                        <th>Driver</th>
-                                        <th>Vehicle</th>
-                                        <th class="text-center">Stop</th>
+                                        <th>Container Code</th>
+                                        <th>Name</th>
+                                        <th>type</th>
+                                        <th>Warehouse</th>
+                                        <th class="text-center">Capacity</th>
                                         <th>Status</th>
                                         <th>Created</th>
                                         <th width="120">Action</th>
@@ -136,4 +136,71 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+$(document).ready(function () {
+
+    $('#storageTable').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+        autoWidth: false,
+    
+        ajax: {
+            url: "<?= base_url('storagecontainer/datatables') ?>",
+            type: "POST"
+        },
+
+        "order": [
+            [0, 'desc']
+        ],
+    
+        columns: [
+            { data: 'container_code' },
+            { data: 'container_name' },
+            { data: 'container_type_name' },
+            { data: 'warehouse_name' },
+            { data: 'capacity_display' },
+            { data: 'status_badge' },
+            { data: 'created_date' },
+            { data: 'action' }
+        ],
+        columnDefs: [
+            {
+                targets: [4, 7],
+                orderable: false
+            }
+        ]
+    });
+
+    $(document).on('click', '.btnDetail', function () {
+
+        let id = $(this).data('id');
+
+        $("#detailShipment").html("");
+        $("#loadingDetail").show();
+        $("#modalDetailShpment").modal("show");
+
+        $.ajax({
+            url: "<?= base_url('/storagecontainer/detail') ?>/" + id,
+            type: "GET",
+            success: function(response) {
+                $("#loadingDetail").hide();
+                $("#detailShipment").html(response);
+            },
+            error: function() {
+                $("#loadingDetail").hide();
+                $("#detailShipment").html(`
+                    <div class="alert alert-danger">
+                        Failed to load storage container detail.
+                    </div>
+                `);
+            }
+        });
+
+    });
+
+    $(document).on('click', '.btnEdit', function () {
+        let id = $(this).data('id');
+        window.location.href = "<?= base_url('/StorageContainer/edit') ?>/" + id;
+    });
+});
 </script>

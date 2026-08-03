@@ -9,7 +9,6 @@ class VehicleModel extends Model
     protected $table            = 'vehicle';
     protected $primaryKey       = 'vehicle_id';
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
 
     protected $allowedFields = [
         'organization_program_id',
