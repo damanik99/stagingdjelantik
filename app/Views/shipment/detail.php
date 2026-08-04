@@ -26,6 +26,7 @@
                 <th>No</th>
                 <th>Activity</th>
                 <th>Organization</th>
+                <th>Warehouse</th>
                 <th>Departure</th>
                 <th>Arrival</th>
                 <th>Qty</th>
@@ -39,6 +40,7 @@
                 <td><?= esc($row['sequence_no']) ?></td>
                 <td><?= esc($row['activity_type']) ?></td>
                 <td><?= esc($row['organization_name']) ?></td>
+                <td><?= esc($row['warehouse_name']) ?></td>
                 <td><?= esc($row['departure_at']) ?></td>
                 <td><?= esc($row['arrival_at']) ?></td>
                 <td><?= esc($row['qty']) . ' ' . esc($row['unit']) ?></td>

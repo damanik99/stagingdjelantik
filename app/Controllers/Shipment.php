@@ -13,6 +13,7 @@ use App\Models\PurchaseOrderModel;
 use App\Models\StatusModel;
 use App\Models\OrganizationModel;
 use App\Models\ShipmentDetailModel;
+use App\Models\WarehouseModel;
 
 class Shipment extends BaseController
 {
@@ -21,6 +22,7 @@ class Shipment extends BaseController
     protected CompanyTypeModel $companyType;
     protected OrganizationModel $organizationModel;
     protected ShipmentDetailModel $shipmentDetail;
+    protected WarehouseModel $warehouse;
 
     protected $columnSearch;
     protected $columnOrder;
@@ -41,6 +43,7 @@ class Shipment extends BaseController
         $this->companyType = new CompanyTYpeModel();
         $this->organizationModel = new OrganizationModel();
         $this->shipmentDetail = new ShipmentDetailModel();
+        $this->warehouse = new WarehouseModel();
     }
 
     public function index()
@@ -54,9 +57,9 @@ class Shipment extends BaseController
     {
         $organization = $this->organizationModel->getDataOrg();
         $buyer   = $this->organizationModel->getTypeOrg('BUYER');
+        $warehouse = $this->warehouse->dataWarehouse();
         
         $vehicle  = (new VehicleModel())->findAll();
-        // $data['po'] = (new PurchaseOrderModel())->findAll();
         
         $status = (new StatusModel())->where('module', 'SHIPMENT')->findAll();
 
@@ -67,7 +70,8 @@ class Shipment extends BaseController
             'status' => $status,
             'organization' => $organization,
             'buyer' => $buyer,
-            'vehicle' =>  $vehicle
+            'vehicle' =>  $vehicle,
+            'warehouse' => $warehouse
         ];
 
         return view('shipment/create', $data);
@@ -96,10 +100,30 @@ class Shipment extends BaseController
 
         foreach ($routes as $index => $route) {
 
-            $activity = strtoupper(trim($route['activity_type'] ?? ''));
+            $activity     = strtoupper(trim($route['activity_type'] ?? ''));
+            $organization = $route['organization_program_id'] ?? null;
+            $warehouse    = $route['warehouse_id'] ?? null;
+
+            // ==========================
+            // Organization / Warehouse
+            // ==========================
+
+            // Keduanya kosong
+            if (empty($organization) && empty($warehouse)) {
+                return 'Row '.($index + 1).': Organization or Warehouse is required.';
+            }
+
+            // Keduanya terisi
+            if (!empty($organization) && !empty($warehouse)) {
+                return 'Row '.($index + 1).': Organization and Warehouse cannot both be selected.';
+            }
+
+            // ==========================
+            // Activity
+            // ==========================
 
             if (empty($activity)) {
-                return 'Activity type is required.';
+                return 'Row '.($index + 1).': Activity type is required.';
             }
 
             switch ($activity) {
@@ -215,11 +239,6 @@ class Shipment extends BaseController
                     'rules' => 'required'
                 ];
 
-                $rules["route.$i.organization_program_id"] = [
-                    'label' => "Organization Row ".($i),
-                    'rules' => 'required|integer'
-                ];
-
                 $rules["route.$i.departure_at"] = [
                     'label' => "Departure Row ".($i),
                     'rules' => 'required'
@@ -268,9 +287,8 @@ class Shipment extends BaseController
                 'modified_by'       => session()->get('users_id')
             ];
 
-            // var_dump($shipment);exit;
-
             $this->shipment->insert($shipment);
+            
 
             $shipmentId = $this->shipment->getInsertID();
 
@@ -281,7 +299,8 @@ class Shipment extends BaseController
                     'shipment_id'                => $shipmentId,
                     'sequence_no'                => $route['sequence_no'],
                     'activity_type'              => $route['activity_type'],
-                    'organization_program_id'    => $route['organization_program_id'],
+                    'organization_program_id'    => !empty($route['organization_program_id']) ? (int)$route['organization_program_id']: null,
+                    'warehouse_id'               => !empty($route['warehouse_id']) ? (int)$route['warehouse_id']: null,
                     'departure_at'               => $route['departure_at'],
                     'arrival_at'                 => $route['arrival_at'],
                     'unit'                       => null,
@@ -336,8 +355,8 @@ class Shipment extends BaseController
 
         return view('shipment/detail', [
             'title' => 'Detail Shipment',
-            'shipment' => $routes[0], // Header shipment
-            'routes'   => $routes      // Detail route
+            'shipment' => $routes[0],
+            'routes'   => $routes
         ]);
     }
 
@@ -532,6 +551,8 @@ class Shipment extends BaseController
                 ON a.shipment_id = e.shipment_id
             JOIN organization_program op 
                 ON e.organization_program_id = op.organization_program_id
+            LEFT JOIN warehouse w 
+                ON e.warehouse_id = w.warehouse_id
             JOIN program p
                 ON op.program_id = p.program_id
             JOIN organization o

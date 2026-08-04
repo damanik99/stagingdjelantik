@@ -4,7 +4,7 @@
         <tbody>
             <tr>
                 <th>COMPANY NAME</th>
-                <td><?= $views['company_name']; ?></td>
+                <td><?= $views['organization_name']; ?></td>
             </tr>
 
             <tr>

@@ -272,7 +272,7 @@ class Vehicle extends BaseController
     public function detail($id)
     {
         $views = $this->vehicle->getDataVehicle($id);
-        // var_dump($views);exit;
+
         $data = [
             'title' => 'Vehicle Detail',
             'views' => $views,
@@ -288,7 +288,7 @@ class Vehicle extends BaseController
         $dataOrganization = $this->organization->getDataOrg();
         $dataWarehouse = $this->warehouse->dataWarehouse(); 
         $datavehicle = $this->vehicle->getDataVehicle($id);
-        // var_dump($datavehicle);exit;
+
         $data = [
             'title' => 'Vehicle Detail',
             'vehicle' => $datavehicle,
@@ -340,14 +340,15 @@ class Vehicle extends BaseController
                 'errors' => $this->validator->getErrors()
             ]);
         }
+        // var_dump($this->request->getPost());exit;
 
         $this->db->transBegin();
 
         try {
 
-            $vehicleUpdate->update($id, [
+            $result = $vehicleUpdate->update($id, [
                 'organization_program_id' => $this->request->getPost('organization_program_id'),
-                'warehouse_id' => $this->request->getPost('warehouse_id'),
+                'warehouse_id' => $this->request->getPost('warehouse_id') ?: null,
                 'plate_number' => $this->request->getPost('plate_number'),
                 'vehicle_type' => $this->request->getPost('vehicle_type'),
                 'brand' => $this->request->getPost('brand'),
@@ -356,7 +357,10 @@ class Vehicle extends BaseController
                 'stnk_expiry_date' => $this->request->getPost('stnk_expiry_date'),
                 'kir_expiry_date' => $this->request->getPost('kir_expiry_date'),
                 'status' => $this->request->getPost('status'),
+                'modified_by' => session()->get('users_id')
             ]);
+
+            // var_dump($this->request->getPost());exit;
 
             if ($this->db->transStatus() === false) {
 

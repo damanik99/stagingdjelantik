@@ -26,6 +26,7 @@
  * @var array $driver
  * @var array $vehicle
  * @var array $status
+ * @var array $warehouse
  * */ ?>
 
 <!--app-content open-->
@@ -139,6 +140,7 @@
                                             <th width="60">Seq</th>
                                             <th width="180">Activity</th>
                                             <th>Organization</th>
+                                            <th>Warehouse</th>
                                             <th width="180">Departure</th>
                                             <th width="180">Arrival</th>
                                             <th width="80"></th>
@@ -224,6 +226,17 @@ $('#btnAddRoute').click(function () {
             <?php foreach($organization as $row){ ?>
             <option value="<?= $row['organization_program_id']; ?>">
             <?= $row['organization_name']; ?>
+            </option>
+        <?php } ?>
+        </select>
+    </td>
+
+    <td>
+        <select name="route[${sequence}][warehouse_id]" class="form-control select2-route">
+            <option value="">Select Warehouse</option>
+            <?php foreach($warehouse as $row){ ?>
+            <option value="<?= $row['warehouse_id']; ?>">
+            <?= $row['warehouse_name']; ?>
             </option>
         <?php } ?>
         </select>

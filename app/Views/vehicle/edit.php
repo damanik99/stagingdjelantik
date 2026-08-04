@@ -214,16 +214,22 @@ $('#vehicleEdit').submit(function(e) {
 
                 let msg = '';
 
-                $.each(response.message, function(key, value){
+                if (typeof response.message === 'string') {
 
-                    msg += value + '<br>';
+                    msg = response.message;
 
-                });
+                } else {
+
+                    $.each(response.message, function (key, value) {
+                        msg += value + '<br>';
+                    });
+
+                }
 
                 Swal.fire({
                     icon : 'error',
                     title : 'Validation Error',
-                    html : msg
+                    text : msg
                 });
 
             }

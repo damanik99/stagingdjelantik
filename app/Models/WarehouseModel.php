@@ -30,7 +30,7 @@ class WarehouseModel extends Model
 
         $sql = 'SELECT * FROM warehouse a
                 JOIN program b ON a.program_id = b.program_id
-                WHERE a.program_id ='.$program_id;
+                WHERE is_active = "1" AND a.program_id ='.$program_id;
 
         return $this->db->query($sql)->getResultArray();
     }
