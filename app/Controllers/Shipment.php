@@ -207,6 +207,7 @@ class Shipment extends BaseController
         $error = $this->validateRoute($routes);
 
         if ($error !== null) {
+            
             return $this->response->setJSON([
                 'success' => false,
                 'message' => $error
@@ -258,9 +259,11 @@ class Shipment extends BaseController
 
         if (!$this->validate($rules)) {
 
+            $errors = $this->validator->getErrors();
             return $this->response->setJSON([
                 'success' => false,
-                'errors'  => $validation->getErrors()
+                'message' => implode("\n", $errors),
+                'errors'  => $errors
             ]);
         }
 
@@ -377,14 +380,17 @@ class Shipment extends BaseController
 
         $dataDriver = $this->db->table('driver')->get()->getResultArray();
 
+        $warehouse = $this->warehouse->dataWarehouse();
+
         if (!$shipment) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
         $routes = $this->db->table('shipment_detail a')
-            ->select('a.shipment_detail_id, a.organization_program_id, sequence_no, activity_type, o.organization_name, a.departure_at, a.arrival_at')
-            ->join('organization_program op', 'op.organization_program_id = a.organization_program_id')
-            ->join('organization o', 'o.organization_id = op.organization_id')
+            ->select('a.shipment_detail_id, a.warehouse_id, a.organization_program_id, sequence_no, activity_type, o.organization_name, a.departure_at, a.arrival_at')
+            ->join('organization_program op', 'a.organization_program_id = op.organization_program_id', 'left')
+            ->join('organization o', 'op.organization_id = o.organization_id', 'left')
+            ->join('warehouse w', 'a.warehouse_id = w.warehouse_code', 'left')
             ->where('shipment_id', $shipmentId)
             ->orderBy('sequence_no')
             ->get()->getResultArray();
@@ -394,8 +400,58 @@ class Shipment extends BaseController
             'routes'    => $routes,
             'driver'    => $dataDriver,
             'vehicle'   => $vehicle,
-            'organization' => $organization
+            'organization' => $organization,
+            'warehouse' => $warehouse
         ]);
+    }
+
+    private function validateCollectionRoute(array $routes): ?string
+    {
+        if (count($routes) < 2) {
+            return 'Collection must have at least 2 routes.';
+        }
+
+        $pickupCount = 0;
+        $dropCount   = 0;
+
+        $lastIndex = array_key_last($routes);
+
+        foreach ($routes as $index => $route) {
+
+            $activity = strtoupper(trim($route['activity_type'] ?? ''));
+
+            if (empty($activity)) {
+                return 'Activity type is required.';
+            }
+
+            switch ($activity) {
+
+                case 'PICKUP':
+                    $pickupCount++;
+                    break;
+
+                case 'DROPOFF':
+                    $dropCount++;
+
+                    if ($index !== $lastIndex) {
+                        return 'DROPOFF must be the last route.';
+                    }
+                    break;
+
+                default:
+                    return "Invalid activity type '{$activity}'.";
+            }
+        }
+
+        if ($pickupCount < 1) {
+            return 'Collection must have at least one PICKUP.';
+        }
+
+        if ($dropCount !== 1) {
+            return 'Collection must have exactly one DROPOFF.';
+        }
+
+        return null;
     }
 
     private function validateUpdate($shipment,$post)
@@ -416,9 +472,7 @@ class Shipment extends BaseController
             }
         }
 
-        $this->validateCollectionRoute(
-            $post['route']
-        );
+        $this->validateCollectionRoute($post['route']);
 
     }
 
@@ -500,7 +554,6 @@ class Shipment extends BaseController
         }
     }
 
-    // 
     private function replaceShipmentDetail($shipmentId, array $routes)
     {
         $this->shipmentDetail
@@ -509,24 +562,23 @@ class Shipment extends BaseController
 
         foreach ($routes as $route) {
 
+            $route['organization_program_id'] = empty($route['organization_program_id']) ? null : $route['organization_program_id'];
+            $route['warehouse_id'] = empty($route['warehouse_id']) ? null : $route['warehouse_id'];
+
             unset($route['shipment_detail_id']);
 
+            // Normalisasi nilai kosong menjadi NULL
             $route['shipment_id'] = $shipmentId;
-
-            $route['status_id'] = 11;
-
+            $route['status_id']   = 11;
+            
             if (!$this->shipmentDetail->insert($route)) {
-
                 throw new \Exception(
                     implode(', ', $this->shipmentDetail->errors())
                 );
-
             }
-
         }
 
     }
-
 
     public function datatables()
     {
@@ -775,6 +827,7 @@ class Shipment extends BaseController
     public function edits($id)
     {
         $dataShipment = $this->shipment->getDetailShipment($id);
+        $warehouse = $this->warehouse->dataWarehouse();
 
         if ($dataShipment['status_code'] == 'RTDT') {
 

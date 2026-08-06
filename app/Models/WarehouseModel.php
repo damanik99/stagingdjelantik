@@ -28,7 +28,7 @@ class WarehouseModel extends Model
     {
         $program_id = session()->get('program');
 
-        $sql = 'SELECT * FROM warehouse a
+        $sql = 'SELECT a.*, b.name FROM warehouse a
                 JOIN program b ON a.program_id = b.program_id
                 WHERE is_active = "1" AND a.program_id ='.$program_id;
 

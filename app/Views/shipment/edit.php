@@ -22,6 +22,7 @@
  * @var array<string, mixed> $vehicle 
  * @var array<string, mixed> $routes
  * @var array<string, mixed> $organization
+ * @var array<string, mixed> $warehouse
  * */ 
 ?>
 
@@ -131,6 +132,7 @@
                                             <th width="60">Seq</th>
                                             <th width="180">Activity</th>
                                             <th>Organization</th>
+                                            <th>Warehouse</th>
                                             <th width="180">Departure</th>
                                             <th width="180">Arrival</th>
                                             <th width="80"></th>
@@ -180,7 +182,7 @@
 
                                                             <option
                                                                 value="<?= $org['organization_program_id']; ?>"
-                                                                <?= $org['organization_program_id']==$row['organization_program_id']
+                                                                <?= $org['organization_program_id'] == $row['organization_program_id']
                                                                     ? 'selected':'';
                                                                 ?>>
 
@@ -192,6 +194,29 @@
 
                                                     </select>
 
+                                                </td>
+                                                <!-- Warehouse -->
+                                                <td>
+                                                    <select
+                                                        class="form-control select2-route warehouse"
+                                                        name="route[<?= $index ?>][warehouse_id]">
+
+                                                        <option value="">Select Warehouse</option>
+
+                                                        <?php foreach($warehouse as $wh): ?>
+                                                            <option
+                                                                value="<?= $wh['warehouse_id']; ?>"
+                                                                <?= $wh['warehouse_id'] == $row['warehouse_id']
+                                                                    ? 'selected'
+                                                                    : ''; ?>>
+
+                                                                <?= esc($wh['warehouse_name']); ?>
+
+                                                            </option>
+
+                                                        <?php endforeach; ?>
+
+                                                    </select>
                                                 </td>
 
                                                 <!-- Departure -->
@@ -283,41 +308,41 @@ function createRouteRow() {
 
     let row = $(`
         <tr>
-
             <td class="seq-col">
                 <span></span>
                 <input type="hidden" class="sequence-no">
             </td>
 
             <td class="activity-col">
-
                 <span class="activity-label">PICKUP</span>
-
                 <input
                     type="hidden"
                     class="activity-type"
                     value="PICKUP">
-
             </td>
 
             <td>
 
                 <select class="form-control select2-route organization-program">
-
                     <option value="">Select Organization</option>
-
                     <?php foreach($organization as $org){ ?>
-
                         <option value="<?= $org['organization_program_id']; ?>">
                             <?= esc($org['organization_name']); ?>
                         </option>
-
                     <?php } ?>
-
                 </select>
-
             </td>
 
+            <td>
+                <select class="form-control select2-route warehouse">
+                    <option value="">Select Warehouse</option>
+                    <?php foreach($warehouse as $wh){ ?>
+                        <option value="<?= $wh['warehouse_id']; ?>">
+                            <?= esc($wh['warehouse_name']); ?>
+                        </option>
+                    <?php } ?>
+                </select>
+            </td>
             <td>
 
                 <input
@@ -418,6 +443,10 @@ function resetRoute() {
         $(this).find('.organization-program')
                .attr('name', `route[${index}][organization_program_id]`);
 
+        // Warehouse
+        $(this).find('.warehouse')
+            .attr('name', `route[${index}][warehouse_id]`);
+
         // Departure
         $(this).find('.departure')
                .attr('name', `route[${index}][departure_at]`);
@@ -426,6 +455,22 @@ function resetRoute() {
         $(this).find('.arrival')
                .attr('name', `route[${index}][arrival_at]`);
 
+        // Warehouse
+        let warehouse = $(this).find('.warehouse');
+
+        if (activity === 'DROPOFF') {
+
+            warehouse.prop('disabled', false);
+
+        } else {
+
+            warehouse
+                .val(null)
+                .trigger('change')
+                .prop('disabled', true);
+
+        }
+
         // Tombol Delete
         if (activity === 'DROPOFF') {
 
@@ -433,18 +478,14 @@ function resetRoute() {
                 .prop('disabled', true)
                 .removeClass('btn-danger')
                 .addClass('btn-secondary');
-
         } else {
-
             $(this).find('.btnDelete')
                 .prop('disabled', false)
                 .removeClass('btn-secondary')
                 .addClass('btn-danger');
-
         }
 
     });
-
 }
 
 function initRow(scope){
@@ -476,9 +517,20 @@ $(function(){
 });
 
 $('#shipmentForm').submit(function(e) {
+
     e.preventDefault();
 
     let formData = $(this).serialize();
+
+
+    $('#routeTable tbody tr').each(function () {
+
+        let organization = $(this).find('.organization-program');
+        if (organization.val() === '') {
+            organization.val(null);
+        }
+
+    });
 
     Swal.fire({
         title: 'Please Wait...',

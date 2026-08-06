@@ -201,92 +201,234 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
 
 <script>
 
-let sequence = 1;
+function createRouteRow() {
 
-$('#btnAddRoute').click(function () {
+    let row = $(`
+    <tr>
 
-    let row = `
+        <td class="seq-col">
+            <span></span>
+            <input type="hidden" class="sequence-no">
+        </td>
 
-<tr>
-    <td>
-        <input type="hidden" name="route[${sequence}][sequence_no]" value="${sequence}">
-        ${sequence}
-    </td>
+        <td class="activity-col">
 
-    <td>
-        <select name="route[${sequence}][activity_type]" class="form-control">
-            <option value="PICKUP">Pickup</option>
-            <option value="DROPOFF">Drop Off</option>
-        </select>
-    </td>
+            <span class="activity-label">PICKUP</span>
 
-    <td>
-        <select name="route[${sequence}][organization_program_id]" class="form-control select2-route">
-            <option value="">Select Organization</option>
-            <?php foreach($organization as $row){ ?>
-            <option value="<?= $row['organization_program_id']; ?>">
-            <?= $row['organization_name']; ?>
-            </option>
-        <?php } ?>
-        </select>
-    </td>
+            <input
+                type="hidden"
+                class="activity-type"
+                value="PICKUP">
 
-    <td>
-        <select name="route[${sequence}][warehouse_id]" class="form-control select2-route">
-            <option value="">Select Warehouse</option>
-            <?php foreach($warehouse as $row){ ?>
-            <option value="<?= $row['warehouse_id']; ?>">
-            <?= $row['warehouse_name']; ?>
-            </option>
-        <?php } ?>
-        </select>
-    </td>
+        </td>
 
-    <td>
-        <input
-            type="text"
-            class="form-control departure"
-            name="route[${sequence}][departure_at]">
-    </td>
+        <td>
 
-    <td>
-        <input
-            type="text"
-            class="form-control arrival"
-            name="route[${sequence}][arrival_at]">
-    </td>
+            <select class="form-control select2-route organization-program">
 
-    <td>
-        <button type="button" class="btn btn-danger btn-sm btnDelete">
-        <i class="fa fa-trash"></i>
-        </button>
-    </td>
-</tr>
+                <option value="">Select Organization</option>
 
-`;
+                <?php foreach($organization as $org){ ?>
 
-    $('#routeTable tbody').append(row);
+                    <option value="<?= $org['organization_program_id']; ?>">
+                        <?= esc($org['organization_name']); ?>
+                    </option>
 
-    $('.select2-route').select2({
-        width:'100%'
-    });
+                <?php } ?>
 
-    $('.departure').datepicker({
-        showOtherMonths: true,
-        selectOtherMonths: true,
-        dateFormat: 'yy-mm-dd',
-    });
+            </select>
 
-    $('.arrival').datepicker({
-        showOtherMonths: true,
-        selectOtherMonths: true,
-        dateFormat: 'yy-mm-dd',
-    });
+        </td>
 
-    sequence++;
+        <td>
+
+            <select class="form-control select2-route warehouse">
+
+                <option value="">Select Warehouse</option>
+
+                <?php foreach($warehouse as $wh){ ?>
+
+                    <option value="<?= $wh['warehouse_id']; ?>">
+                        <?= esc($wh['warehouse_name']); ?>
+                    </option>
+
+                <?php } ?>
+
+            </select>
+
+        </td>
+
+        <td>
+            <input type="text" class="form-control departure">
+        </td>
+
+        <td>
+            <input type="text" class="form-control arrival">
+        </td>
+
+        <td class="text-center">
+
+            <button
+                type="button"
+                class="btn btn-danger btn-sm btnDelete">
+
+                <i class="fa fa-trash"></i>
+
+            </button>
+
+        </td>
+
+    </tr>
+    `);
+
+    initRow(row);
+
+    return row;
+
+}
+
+function appendPickup(){
+
+    let row = createRouteRow();
+
+    let dropoff = $('#routeTable tbody .activity-type').filter(function(){
+
+        return $(this).val() === 'DROPOFF';
+
+    }).closest('tr');
+
+    if(dropoff.length){
+
+        row.insertBefore(dropoff);
+
+    }else{
+
+        $('#routeTable tbody').append(row);
+
+    }
+
+    resetRoute();
+
+}
+
+$('#btnAddRoute').click(function(){
+
+    appendPickup();
 
 });
 
+function resetRoute(){
+
+    let rows = $('#routeTable tbody tr');
+
+    rows.each(function(index) {
+
+        let seq = index + 1;
+
+        let isDropoff = (seq === rows.length);
+
+        //=======================
+        // Sequence
+        //=======================
+
+        $(this).find('.seq-col span').text(seq);
+
+        $(this).find('.sequence-no')
+            .val(seq)
+            .attr('name',`route[${index}][sequence_no]`);
+
+        //=======================
+        // Activity
+        //=======================
+
+        let activity = isDropoff
+            ? 'DROPOFF'
+            : 'PICKUP';
+
+        $(this).find('.activity-label').text(activity);
+
+        $(this).find('.activity-type')
+            .val(activity)
+            .attr('name',`route[${index}][activity_type]`);
+
+        //=======================
+        // Organization
+        //=======================
+
+        $(this).find('.organization-program')
+            .attr('name',`route[${index}][organization_program_id]`);
+
+        //=======================
+        // Warehouse
+        //=======================
+
+        $(this).find('.warehouse')
+            .attr('name',`route[${index}][warehouse_id]`);
+
+        //=======================
+        // Departure
+        //=======================
+
+        $(this).find('.departure')
+            .attr('name',`route[${index}][departure_at]`);
+
+        //=======================
+        // Arrival
+        //=======================
+
+        $(this).find('.arrival')
+            .attr('name',`route[${index}][arrival_at]`);
+
+        //=======================
+        // B2C Logic
+        //=======================
+
+        if(isDropoff) 
+        {
+            $(this).find('.organization-program').prop('disabled', false);
+            $(this).find('.warehouse').prop('disabled', false);
+            $(this).find('.btnDelete').hide();
+        } 
+        else 
+        {
+            $(this).find('.organization-program').prop('disabled', false);
+            $(this).find('.warehouse').val('').trigger('change').prop('disabled', true);
+            $(this).find('.btnDelete').show();
+
+        }
+    });
+
+}
+
+function initRow(scope){
+
+    scope.find('.select2-route').select2({
+        width:'100%'
+    });
+
+    scope.find('.departure').datepicker({
+        showOtherMonths:true,
+        selectOtherMonths:true,
+        dateFormat:'yy-mm-dd'
+    });
+
+    scope.find('.arrival').datepicker({
+        showOtherMonths:true,
+        selectOtherMonths:true,
+        dateFormat:'yy-mm-dd'
+    });
+
+}
+
+$(function(){
+
+    initRow($(document));
+
+    resetRoute();
+
+});
+
+//save data shipment
 $(document).ready(function () {
 
     $('.select2-show-search').select2({
@@ -323,7 +465,6 @@ $(document).ready(function () {
                     }).then(() => {
                         window.location.href = "<?= base_url('/Shipment'); ?>";
                     });
-
                 } else {
 
                     Swal.fire({
