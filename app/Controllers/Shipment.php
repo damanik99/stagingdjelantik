@@ -454,26 +454,59 @@ class Shipment extends BaseController
         return null;
     }
 
-    private function validateUpdate($shipment,$post)
+    private function validateUpdate($shipment, $post)
     {
-        if($shipment['status_id'] == '10') {
+        if ($shipment['status_id'] == '10') {
 
-            if($shipment['driver_id'] != $post['driver_id'])
-            {
+            if ($shipment['driver_id'] != $post['driver_id']) {
                 throw new \Exception(
                     'Driver tidak dapat diubah.'
                 );
             }
 
-            if($shipment['vehicle_id'] != $post['vehicle_id']) {
+            if ($shipment['vehicle_id'] != $post['vehicle_id']) {
                 throw new \Exception(
                     'Vehicle tidak dapat diubah.'
                 );
             }
         }
 
-        $this->validateCollectionRoute($post['route']);
+        // =========================================
+        // Validate Route
+        // =========================================
+        $routes = $post['route'] ?? [];
 
+        if (empty($routes)) {
+            throw new \Exception(
+                'Shipment route tidak boleh kosong.'
+            );
+        }
+
+        foreach ($routes as $index => $route) {
+
+            $routeNumber = $index + 1;
+
+            // Departure wajib
+            if (empty($route['departure_at'])) {
+                throw new \Exception(
+                    "Departure pada route {$routeNumber} wajib diisi."
+                );
+            }
+
+            // Arrival wajib
+            if (empty($route['arrival_at'])) {
+                throw new \Exception(
+                    "Arrival pada route {$routeNumber} wajib diisi."
+                );
+            }
+        }
+
+        // Business validation collection
+        $error = $this->validateCollectionRoute($routes);
+
+        if ($error !== null) {
+            throw new \Exception($error);
+        }
     }
 
     public function updateCollection($shipmentId)
@@ -601,15 +634,15 @@ class Shipment extends BaseController
                 ON a.status_id = d.status_id
             LEFT JOIN shipment_detail e
                 ON a.shipment_id = e.shipment_id
-            JOIN organization_program op 
+            LEFT JOIN organization_program op
                 ON e.organization_program_id = op.organization_program_id
-            LEFT JOIN warehouse w 
+            LEFT JOIN warehouse w
                 ON e.warehouse_id = w.warehouse_id
-            JOIN program p
-                ON op.program_id = p.program_id
-            JOIN organization o
+            LEFT JOIN program p
+                ON p.program_id = COALESCE(op.program_id, w.program_id)
+            LEFT JOIN organization o
                 ON op.organization_id = o.organization_id
-            WHERE op.program_id = ?
+            WHERE COALESCE(op.program_id, w.program_id) = ?
         ";
 
         $filter = "";

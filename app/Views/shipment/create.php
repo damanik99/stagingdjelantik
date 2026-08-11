@@ -201,7 +201,113 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
 
 <script>
 
-function createRouteRow() {
+const ShipmentRule = {
+    COLLECTION: {
+        allowAdd: true,
+        routes: [
+            {
+                activity: 'PICKUP',
+                organization: true,
+                warehouse: false,
+                delete: true
+            },
+            {
+                activity: 'DROPOFF',
+                organization: true,
+                warehouse: true,
+                delete: false
+            }
+        ]
+    },
+    INBOUND: {
+        allowAdd: false,
+        routes: [
+            {
+                activity: 'PICKUP',
+                organization: true,
+                warehouse: false,
+                delete: false
+            },
+            {
+                activity: 'DROPOFF',
+                organization: false,
+                warehouse: true,
+                delete: false
+            }
+        ]
+    },
+    OUTBOUND: {
+        allowAdd: false,
+        routes: [
+            {
+                activity: 'PICKUP',
+                organization: false,
+                warehouse: true,
+                delete: false
+            },
+            {
+                activity: 'DROPOFF',
+                organization: true,
+                warehouse: false,
+                delete: false
+            }
+        ]
+    },
+    TRANSFER: {
+        allowAdd: false,
+        routes: [
+            {
+                activity: 'PICKUP',
+                organization: false,
+                warehouse: true,
+                delete: false
+            },
+            {
+                activity: 'DROPOFF',
+                organization: false,
+                warehouse: true,
+                delete: false
+            }
+        ]
+    }
+};
+
+$('select[name="shipment_type"]').change(function(){
+    generateRoute(
+        $(this).val()
+    );
+
+});
+
+function generateRoute(type)
+{
+    $('#routeTable tbody').empty();
+    let rule = ShipmentRule[type];
+    if(!rule){
+
+        return;
+
+    }
+    $.each(rule.routes,function(i,config){
+
+        $('#routeTable tbody')
+            .append(
+                createRouteRow(config)
+            );
+
+    });
+    if(rule.allowAdd){
+
+        $('#btnAddRoute').show();
+    }else{
+
+        $('#btnAddRoute').hide();
+
+    }
+    resetRoute();
+}
+
+function createRouteRow(config) {
 
     let row = $(`
     <tr>
@@ -281,40 +387,105 @@ function createRouteRow() {
     </tr>
     `);
 
+    row.find('.activity-label')
+    .text(config.activity);
+
+    row.find('.activity-type')
+        .val(config.activity);
+
+
+    // Organization
+    row.find('.organization-program')
+        .prop('disabled', !config.organization);
+
+    if(!config.organization){
+
+        row.find('.organization-program')
+            .val('')
+            .trigger('change');
+
+    }
+
+
+    // Warehouse
+    row.find('.warehouse')
+        .prop('disabled', !config.warehouse);
+
+    if(!config.warehouse){
+
+        row.find('.warehouse')
+            .val('')
+            .trigger('change');
+
+    }
+
+
+    // Delete Button
+    if(config.delete){
+
+        row.find('.btnDelete').show();
+
+    }else{
+
+        row.find('.btnDelete').hide();
+
+    }
+
     initRow(row);
 
     return row;
 
 }
 
-function appendPickup(){
+function appendPickup()
+{
+    let config = {
+        activity : 'PICKUP',
+        organization : true,
+        warehouse : false,
+        delete : true
+    };
 
-    let row = createRouteRow();
+    let row = createRouteRow(config);
 
-    let dropoff = $('#routeTable tbody .activity-type').filter(function(){
+    let dropoff = $('#routeTable tbody .activity-type')
+        .filter(function () {
+            return $(this).val() === 'DROPOFF';
+        })
+        .closest('tr');
 
-        return $(this).val() === 'DROPOFF';
-
-    }).closest('tr');
-
-    if(dropoff.length){
+    if (dropoff.length) {
 
         row.insertBefore(dropoff);
 
-    }else{
+    } else {
 
         $('#routeTable tbody').append(row);
 
     }
 
     resetRoute();
-
 }
 
 $('#btnAddRoute').click(function(){
 
-    appendPickup();
+    let row = createRouteRow({
+        activity : 'PICKUP',
+        organization : true,
+        warehouse : false,
+        delete : true
 
+    });
+    let dropoff =
+        $('#routeTable tbody .activity-type')
+        .filter(function(){
+
+            return $(this).val() == 'DROPOFF';
+
+        })
+        .closest('tr');
+    row.insertBefore(dropoff);
+    resetRoute();
 });
 
 function resetRoute(){
@@ -324,15 +495,12 @@ function resetRoute(){
     rows.each(function(index) {
 
         let seq = index + 1;
-
         let isDropoff = (seq === rows.length);
 
         //=======================
         // Sequence
         //=======================
-
         $(this).find('.seq-col span').text(seq);
-
         $(this).find('.sequence-no')
             .val(seq)
             .attr('name',`route[${index}][sequence_no]`);
@@ -340,64 +508,33 @@ function resetRoute(){
         //=======================
         // Activity
         //=======================
-
         let activity = isDropoff
             ? 'DROPOFF'
             : 'PICKUP';
 
         $(this).find('.activity-label').text(activity);
-
-        $(this).find('.activity-type')
-            .val(activity)
-            .attr('name',`route[${index}][activity_type]`);
+        $(this).find('.activity-type').val(activity).attr('name',`route[${index}][activity_type]`);
 
         //=======================
         // Organization
         //=======================
-
-        $(this).find('.organization-program')
-            .attr('name',`route[${index}][organization_program_id]`);
+        $(this).find('.organization-program').attr('name',`route[${index}][organization_program_id]`);
 
         //=======================
         // Warehouse
         //=======================
-
-        $(this).find('.warehouse')
-            .attr('name',`route[${index}][warehouse_id]`);
+        $(this).find('.warehouse').attr('name',`route[${index}][warehouse_id]`);
 
         //=======================
         // Departure
         //=======================
-
-        $(this).find('.departure')
-            .attr('name',`route[${index}][departure_at]`);
+        $(this).find('.departure').attr('name',`route[${index}][departure_at]`);
 
         //=======================
         // Arrival
         //=======================
-
-        $(this).find('.arrival')
-            .attr('name',`route[${index}][arrival_at]`);
-
-        //=======================
-        // B2C Logic
-        //=======================
-
-        if(isDropoff) 
-        {
-            $(this).find('.organization-program').prop('disabled', false);
-            $(this).find('.warehouse').prop('disabled', false);
-            $(this).find('.btnDelete').hide();
-        } 
-        else 
-        {
-            $(this).find('.organization-program').prop('disabled', false);
-            $(this).find('.warehouse').val('').trigger('change').prop('disabled', true);
-            $(this).find('.btnDelete').show();
-
-        }
+        $(this).find('.arrival').attr('name',`route[${index}][arrival_at]`);
     });
-
 }
 
 function initRow(scope){

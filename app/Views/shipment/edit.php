@@ -107,7 +107,7 @@
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label class="form-label">Shipment Type <span class="text-danger">*</span></label>
-                                        <select name="shipment_type" class="form-control" required>
+                                        <select name="shipment_type" class="form-control" disabled>
                                             <option value="">-- Select Shipment Type --</option>
                                                 <option value="COLLECTION" <?= $shipment['shipment_type'] == 'COLLECTION' ? 'selected' : ''; ?>> Collection</option>
                                                 <option value="INBOUND" <?= $shipment['shipment_type'] == 'INBOUND' ? 'selected' : ''; ?>>Inbound</option>
@@ -116,14 +116,15 @@
                                         </select>
                                     </div>
                                 </div>
-
+                                <input type="hidden" name="shipment_type" value="<?= $shipment['shipment_type']; ?>">
                             </div>
                         </div>
 
                         <div class="card-body">
                             <h4>Shipment Route</h4>
+                            <!-- button route -->
                             <button type="button" class="btn btn-primary mb-3" id="btnAddRoute">
-                                <i class="fa fa-plus"></i> Add Route
+                                <i class="fa fa-plus"></i> Add Pickup
                             </button>
                             <div class="table-responsive">
                                 <table class="table table-bordered" id="routeTable">
@@ -140,14 +141,10 @@
                                     </thead>
     
                                     <tbody>
-                                        <tbody>
                                             <?php foreach ($routes as $index => $row): ?>
-
                                             <tr>
-
                                                 <!-- Sequence -->
                                                 <td class="text-center seq-col">
-
                                                     <input
                                                         type="hidden"
                                                         class="sequence-no"
@@ -155,7 +152,6 @@
                                                         value="<?= $row['sequence_no']; ?>">
 
                                                     <span><?= $row['sequence_no']; ?></span>
-
                                                 </td>
 
                                                 <!-- Activity -->
@@ -171,10 +167,11 @@
                                                     </span>
 
                                                 </td>
+
                                                 <!-- Organization -->
                                                 <td>
                                                     <select class="form-control select2-route organization-program"
-                                                    name="route[<?= $index ?>][organization_program_id]">>
+                                                    name="route[<?= $index ?>][organization_program_id]">
 
                                                         <option value="">Select Organization</option>
 
@@ -195,6 +192,7 @@
                                                     </select>
 
                                                 </td>
+
                                                 <!-- Warehouse -->
                                                 <td>
                                                     <select
@@ -222,10 +220,7 @@
                                                 <!-- Departure -->
                                                 <td>
 
-                                                    <input
-                                                        type="text"
-                                                        class="form-control departure"
-                                                        name="route[<?= $index ?>][departure_at]"
+                                                    <input type="text" class="form-control departure" name="route[<?= $index ?>][departure_at]"
                                                         value="<?= $row['departure_at']; ?>">
 
                                                 </td>
@@ -233,31 +228,17 @@
                                                 <!-- Arrival -->
                                                 <td>
 
-                                                    <input
-                                                        type="text"
-                                                        class="form-control arrival"
-                                                        name="route[<?= $index ?>][arrival_at]"
+                                                    <input type="text" class="form-control arrival" name="route[<?= $index ?>][arrival_at]"
                                                         value="<?= $row['arrival_at']; ?>">
-
                                                 </td>
 
                                                 <td class="text-center">
-
-                                                    <button
-                                                        type="button"
-                                                        class="btn btn-danger btn-sm btnDelete">
-
+                                                    <button type="button" class="btn btn-danger btn-sm btnDelete">
                                                         <i class="fa fa-trash"></i>
-
                                                     </button>
-
                                                 </td>
-
                                             </tr>
-
                                             <?php endforeach; ?>
-
-                                            </tbody>
                                     </tbody>
                                 </table>
                             </div>
@@ -304,45 +285,485 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
 
 <script>
 
-function createRouteRow() {
+/*
+|--------------------------------------------------------------------------
+| Shipment Rule
+|--------------------------------------------------------------------------
+|
+| Business Rule:
+|
+| COLLECTION
+|   PICKUP    -> Organization
+|   PICKUP    -> Organization
+|   ...
+|   DROPOFF   -> Organization / Warehouse
+|
+| INBOUND
+|   PICKUP    -> Organization
+|   DROPOFF   -> Warehouse
+|
+| OUTBOUND
+|   PICKUP    -> Warehouse
+|   DROPOFF   -> Organization
+|
+| TRANSFER
+|   PICKUP    -> Warehouse
+|   DROPOFF   -> Warehouse
+|
+|--------------------------------------------------------------------------
+*/
 
+const ShipmentRule = {
+
+    COLLECTION: {
+
+        allowAdd: true,
+
+        pickup: {
+            organization: true,
+            warehouse: false,
+            delete: true
+        },
+
+        dropoff: {
+            organization: true,
+            warehouse: true,
+            delete: false
+        }
+
+    },
+
+
+    INBOUND: {
+
+        allowAdd: false,
+
+        pickup: {
+            organization: true,
+            warehouse: false,
+            delete: false
+        },
+
+        dropoff: {
+            organization: false,
+            warehouse: true,
+            delete: false
+        }
+
+    },
+
+
+    OUTBOUND: {
+
+        allowAdd: false,
+
+        pickup: {
+            organization: false,
+            warehouse: true,
+            delete: false
+        },
+
+        dropoff: {
+            organization: true,
+            warehouse: false,
+            delete: false
+        }
+
+    },
+
+
+    TRANSFER: {
+
+        allowAdd: false,
+
+        pickup: {
+            organization: false,
+            warehouse: true,
+            delete: false
+        },
+
+        dropoff: {
+            organization: false,
+            warehouse: true,
+            delete: false
+        }
+
+    }
+
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Apply Shipment Rule
+|--------------------------------------------------------------------------
+*/
+
+function applyShipmentRule(row)
+{
+    const shipmentType =
+        $('[name="shipment_type"]').val();
+
+    const activity =
+        row.find('.activity-type').val();
+
+    const rule =
+        ShipmentRule[shipmentType];
+
+    if (!rule) {
+        return;
+    }
+
+    const config =
+        activity === 'PICKUP'
+            ? rule.pickup
+            : rule.dropoff;
+
+
+    const organization =
+        row.find('.organization-program');
+
+    const warehouse =
+        row.find('.warehouse');
+
+    const btnDelete =
+        row.find('.btnDelete');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Organization
+    |--------------------------------------------------------------------------
+    */
+
+    organization.prop(
+        'disabled',
+        !config.organization
+    );
+
+    if (!config.organization) {
+
+        organization
+            .val('')
+            .trigger('change');
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Warehouse
+    |--------------------------------------------------------------------------
+    */
+
+    warehouse.prop(
+        'disabled',
+        !config.warehouse
+    );
+
+    if (!config.warehouse) {
+
+        warehouse
+            .val('')
+            .trigger('change');
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delete Button
+    |--------------------------------------------------------------------------
+    */
+
+    btnDelete
+        .prop(
+            'disabled',
+            !config.delete
+        )
+        .toggleClass(
+            'btn-danger',
+            config.delete
+        )
+        .toggleClass(
+            'btn-secondary',
+            !config.delete
+        );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Initialize Row
+|--------------------------------------------------------------------------
+*/
+
+function initRow(scope)
+{
+    scope.find('.select2-route').each(function () {
+
+        if ($(this).hasClass('select2-hidden-accessible')) {
+            return;
+        }
+
+        $(this).select2({
+            width: '100%'
+        });
+
+    });
+
+
+    scope.find('.departure').datepicker({
+        showOtherMonths: true,
+        selectOtherMonths: true,
+        dateFormat: 'yy-mm-dd'
+    });
+
+
+    scope.find('.arrival').datepicker({
+        showOtherMonths: true,
+        selectOtherMonths: true,
+        dateFormat: 'yy-mm-dd'
+    });
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Reset Route
+|--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| resetRoute() TIDAK mengubah activity.
+|
+| Activity berasal dari:
+| - database untuk route existing
+| - ShipmentRule untuk route baru
+|
+| resetRoute hanya:
+| - sequence
+| - name attribute
+|
+|--------------------------------------------------------------------------
+*/
+
+function resetRoute()
+{
+    const rows =
+        $('#routeTable tbody tr');
+
+
+    rows.each(function(index) {
+
+        const seq =
+            index + 1;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Activity dari row
+        |--------------------------------------------------------------------------
+        */
+
+        const activity =
+            $(this)
+                .find('.activity-type')
+                .val();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Sequence
+        |--------------------------------------------------------------------------
+        */
+
+        $(this)
+            .find('.seq-col span')
+            .text(seq);
+
+
+        $(this)
+            .find('.sequence-no')
+            .val(seq)
+            .attr(
+                'name',
+                `route[${index}][sequence_no]`
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Activity
+        |--------------------------------------------------------------------------
+        */
+
+        $(this)
+            .find('.activity-type')
+            .attr(
+                'name',
+                `route[${index}][activity_type]`
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Organization
+        |--------------------------------------------------------------------------
+        */
+
+        $(this)
+            .find('.organization-program')
+            .attr(
+                'name',
+                `route[${index}][organization_program_id]`
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Warehouse
+        |--------------------------------------------------------------------------
+        */
+
+        $(this)
+            .find('.warehouse')
+            .attr(
+                'name',
+                `route[${index}][warehouse_id]`
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Departure
+        |--------------------------------------------------------------------------
+        */
+
+        $(this)
+            .find('.departure')
+            .attr(
+                'name',
+                `route[${index}][departure_at]`
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Arrival
+        |--------------------------------------------------------------------------
+        */
+
+        $(this)
+            .find('.arrival')
+            .attr(
+                'name',
+                `route[${index}][arrival_at]`
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Apply Business Rule
+        |--------------------------------------------------------------------------
+        */
+
+        applyShipmentRule($(this));
+
+    });
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Create New Route Row
+|--------------------------------------------------------------------------
+|
+| Digunakan hanya ketika user menambahkan PICKUP baru.
+|
+|--------------------------------------------------------------------------
+*/
+
+function createRouteRow(config)
+{
     let row = $(`
         <tr>
-            <td class="seq-col">
-                <span></span>
-                <input type="hidden" class="sequence-no">
-            </td>
 
-            <td class="activity-col">
-                <span class="activity-label">PICKUP</span>
+            <!-- Sequence -->
+            <td class="text-center seq-col">
+
+                <span></span>
+
                 <input
                     type="hidden"
-                    class="activity-type"
-                    value="PICKUP">
+                    class="sequence-no">
+
             </td>
 
+
+            <!-- Activity -->
             <td>
 
-                <select class="form-control select2-route organization-program">
-                    <option value="">Select Organization</option>
-                    <?php foreach($organization as $org){ ?>
+                <input
+                    type="hidden"
+                    class="activity-type">
+
+                <span class="activity-label"></span>
+
+            </td>
+
+
+            <!-- Organization -->
+            <td>
+
+                <select
+                    class="form-control select2-route organization-program">
+
+                    <option value="">
+                        Select Organization
+                    </option>
+
+                    <?php foreach ($organization as $org): ?>
+
                         <option value="<?= $org['organization_program_id']; ?>">
+
                             <?= esc($org['organization_name']); ?>
+
                         </option>
-                    <?php } ?>
+
+                    <?php endforeach; ?>
+
                 </select>
+
             </td>
 
+
+            <!-- Warehouse -->
             <td>
-                <select class="form-control select2-route warehouse">
-                    <option value="">Select Warehouse</option>
-                    <?php foreach($warehouse as $wh){ ?>
+
+                <select
+                    class="form-control select2-route warehouse">
+
+                    <option value="">
+                        Select Warehouse
+                    </option>
+
+                    <?php foreach ($warehouse as $wh): ?>
+
                         <option value="<?= $wh['warehouse_id']; ?>">
+
                             <?= esc($wh['warehouse_name']); ?>
+
                         </option>
-                    <?php } ?>
+
+                    <?php endforeach; ?>
+
                 </select>
+
             </td>
+
+
+            <!-- Departure -->
             <td>
 
                 <input
@@ -351,6 +772,8 @@ function createRouteRow() {
 
             </td>
 
+
+            <!-- Arrival -->
             <td>
 
                 <input
@@ -359,6 +782,8 @@ function createRouteRow() {
 
             </td>
 
+
+            <!-- Delete -->
             <td class="text-center">
 
                 <button
@@ -374,228 +799,438 @@ function createRouteRow() {
         </tr>
     `);
 
-    initRow(row);
 
-    return row;
+    /*
+    |--------------------------------------------------------------------------
+    | Activity
+    |--------------------------------------------------------------------------
+    */
 
-}
+    row.find('.activity-label')
+        .text(config.activity);
 
-function appendPickup(){
 
-    let row = createRouteRow();
+    row.find('.activity-type')
+        .val(config.activity);
 
-    // cari row Dropoff
-    let dropoff = $('#routeTable tbody .activity-type').filter(function(){
 
-        return $(this).val() == 'DROPOFF';
+    /*
+    |--------------------------------------------------------------------------
+    | Organization
+    |--------------------------------------------------------------------------
+    */
 
-    }).closest('tr');
+    row.find('.organization-program')
+        .prop(
+            'disabled',
+            !config.organization
+        );
 
-    if(dropoff.length){
 
-        row.insertBefore(dropoff);
+    if (!config.organization) {
 
-    }else{
-
-        $('#routeTable tbody').append(row);
+        row.find('.organization-program')
+            .val('')
+            .trigger('change');
 
     }
 
-    resetRoute();
 
+    /*
+    |--------------------------------------------------------------------------
+    | Warehouse
+    |--------------------------------------------------------------------------
+    */
+
+    row.find('.warehouse')
+        .prop(
+            'disabled',
+            !config.warehouse
+        );
+
+
+    if (!config.warehouse) {
+
+        row.find('.warehouse')
+            .val('')
+            .trigger('change');
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delete Button
+    |--------------------------------------------------------------------------
+    */
+
+    row.find('.btnDelete')
+        .prop(
+            'disabled',
+            !config.delete
+        )
+        .toggleClass(
+            'btn-danger',
+            config.delete
+        )
+        .toggleClass(
+            'btn-secondary',
+            !config.delete
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Initialize Select2 / Datepicker
+    |--------------------------------------------------------------------------
+    */
+
+    initRow(row);
+
+
+    return row;
 }
 
-$('#btnAddRoute').click(function(){
+
+/*
+|--------------------------------------------------------------------------
+| Append Pickup
+|--------------------------------------------------------------------------
+|
+| Collection:
+|
+| Pickup
+| Pickup
+| Pickup
+| Dropoff
+|
+| Pickup baru selalu diletakkan sebelum Dropoff.
+|
+|--------------------------------------------------------------------------
+*/
+
+function appendPickup()
+{
+    const row =
+        createRouteRow({
+
+            activity: 'PICKUP',
+
+            organization: true,
+
+            warehouse: false,
+
+            delete: true
+
+        });
+
+
+    const dropoff =
+        $('#routeTable tbody .activity-type')
+            .filter(function () {
+
+                return $(this).val() === 'DROPOFF';
+
+            })
+            .closest('tr');
+
+
+    if (dropoff.length) {
+
+        row.insertBefore(dropoff);
+
+    } else {
+
+        $('#routeTable tbody')
+            .append(row);
+
+    }
+
+
+    resetRoute();
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Add Route Button
+|--------------------------------------------------------------------------
+*/
+
+$('#btnAddRoute').on('click', function () {
+
+    const shipmentType =
+        $('[name="shipment_type"]').val();
+
+
+    const rule =
+        ShipmentRule[shipmentType];
+
+
+    if (!rule || !rule.allowAdd) {
+
+        return;
+
+    }
+
 
     appendPickup();
 
 });
 
-function resetRoute() {
 
-    let rows = $('#routeTable tbody tr');
+/*
+|--------------------------------------------------------------------------
+| Delete Route
+|--------------------------------------------------------------------------
+*/
 
-    rows.each(function(index){
+$(document).on(
+    'click',
+    '.btnDelete',
+    function () {
 
-        let seq = index + 1;
+        const button =
+            $(this);
 
-        let activity = (seq === rows.length)
-            ? 'DROPOFF'
-            : 'PICKUP';
+        /*
+        |--------------------------------------------------------------------------
+        | Jangan hapus Dropoff
+        |--------------------------------------------------------------------------
+        */
 
-        // Sequence
-        $(this).find('.seq-col span')
-               .text(seq);
+        if (button.prop('disabled')) {
 
-        $(this).find('.sequence-no')
-               .val(seq)
-               .attr('name', `route[${index}][sequence_no]`);
-
-        // Activity
-        $(this).find('.activity-label')
-               .text(activity);
-
-        $(this).find('.activity-type')
-               .val(activity)
-               .attr('name', `route[${index}][activity_type]`);
-
-        // Organization
-        $(this).find('.organization-program')
-               .attr('name', `route[${index}][organization_program_id]`);
-
-        // Warehouse
-        $(this).find('.warehouse')
-            .attr('name', `route[${index}][warehouse_id]`);
-
-        // Departure
-        $(this).find('.departure')
-               .attr('name', `route[${index}][departure_at]`);
-
-        // Arrival
-        $(this).find('.arrival')
-               .attr('name', `route[${index}][arrival_at]`);
-
-        // Warehouse
-        let warehouse = $(this).find('.warehouse');
-
-        if (activity === 'DROPOFF') {
-
-            warehouse.prop('disabled', false);
-
-        } else {
-
-            warehouse
-                .val(null)
-                .trigger('change')
-                .prop('disabled', true);
+            return;
 
         }
 
-        // Tombol Delete
+
+        const row =
+            button.closest('tr');
+
+
+        const activity =
+            row.find('.activity-type').val();
+
+
         if (activity === 'DROPOFF') {
 
-            $(this).find('.btnDelete')
-                .prop('disabled', true)
-                .removeClass('btn-danger')
-                .addClass('btn-secondary');
-        } else {
-            $(this).find('.btnDelete')
-                .prop('disabled', false)
-                .removeClass('btn-secondary')
-                .addClass('btn-danger');
+            return;
+
         }
 
+
+        row.remove();
+
+
+        resetRoute();
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Shipment Type
+|--------------------------------------------------------------------------
+|
+| Pada Edit shipment type disabled.
+| Jadi event change sebenarnya tidak diperlukan,
+| tetapi function ini tetap aman jika nanti field di-enable.
+|
+|--------------------------------------------------------------------------
+*/
+
+$('[name="shipment_type"]').on(
+    'change',
+    function () {
+
+        resetRoute();
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Initialize Existing Shipment
+|--------------------------------------------------------------------------
+|
+| PENTING:
+|
+| Jangan generateRoute() di sini.
+|
+| Karena route sudah berasal dari database.
+|
+|--------------------------------------------------------------------------
+*/
+
+$(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Select2 Header
+    |--------------------------------------------------------------------------
+    */
+    $('.select2-show-search').select2({
+        width: '100%'
     });
-}
-
-function initRow(scope){
-
-    scope.find('.select2-route').select2({
-        width:'100%'
-    });
-
-    scope.find('.departure').datepicker({
-        showOtherMonths:true,
-        selectOtherMonths:true,
-        dateFormat:'yy-mm-dd'
-    });
-
-    scope.find('.arrival').datepicker({
-        showOtherMonths:true,
-        selectOtherMonths:true,
-        dateFormat:'yy-mm-dd'
-    });
-
-}
-
-$(function(){
-
-    initRow($(document));
-
+    /*
+    |--------------------------------------------------------------------------
+    | Initialize Existing Rows
+    |--------------------------------------------------------------------------
+    */
+    initRow(
+        $('#routeTable')
+    );
+    /*
+    |--------------------------------------------------------------------------
+    | Apply Existing Shipment Rule
+    |--------------------------------------------------------------------------
+    */
     resetRoute();
+    /*
+    |--------------------------------------------------------------------------
+    | Button Add Route
+    |--------------------------------------------------------------------------
+    */
+    const shipmentType =
+        $('[name="shipment_type"]').val();
+    const rule =
+        ShipmentRule[shipmentType];
+    if (rule && rule.allowAdd) {
+
+        $('#btnAddRoute')
+            .show()
+            .html(
+                '<i class="fa fa-plus"></i> Add Pickup'
+            );
+    } else {
+        $('#btnAddRoute').hide();
+    }
 
 });
+/*
+|--------------------------------------------------------------------------
+| Submit Edit Shipment
+|--------------------------------------------------------------------------
+*/
+$('#shipmentForm').on(
+    'submit',
+    function (e) {
+        e.preventDefault();
 
-$('#shipmentForm').submit(function(e) {
+        resetRoute();
 
-    e.preventDefault();
+        const formData =
+            $(this).serialize();
+        Swal.fire({
+            title: 'Please Wait...',
 
-    let formData = $(this).serialize();
+            allowOutsideClick: false,
 
+            didOpen: () => {
 
-    $('#routeTable tbody tr').each(function () {
-
-        let organization = $(this).find('.organization-program');
-        if (organization.val() === '') {
-            organization.val(null);
-        }
-
-    });
-
-    Swal.fire({
-        title: 'Please Wait...',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-
-    $.ajax({
-        url: "<?= base_url('/shipment/updateCollection/'.$shipment['shipment_id']); ?>",
-        type: "POST",
-        data: $(this).serialize(),
-        dataType: "json",
-        success: function(response) {
-            
-            if (response.status == true) {
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: response.message
-                }).then(() => {
-                    window.location.href = "<?= base_url('/Shipment'); ?>";
-                });
-
-            } else {
-
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Validation',
-                    text: response.message
-                });
-
-                return;
+                Swal.showLoading();
 
             }
 
-        },
-        error: function() {
+        });
+
+
+        $.ajax({
+
+            url: "<?= base_url('/shipment/updateCollection/'.$shipment['shipment_id']); ?>",
+
+            type: 'POST',
+
+            data: formData,
+
+            dataType: 'json',
+
+            success: function (response) {
+
+                console.log('=== UPDATE SHIPMENT RESPONSE ===');
+                console.log(response);
+                console.log('status:', response.status);
+                console.log('message:', response.message);
+
+                if (response.status === true) {
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message
+                    }).then(() => {
+
+                        window.location.href =
+                            "<?= base_url('/Shipment'); ?>";
+
+                    });
+
+                } else {
+
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Validation',
+                        text: response.message || 'Validation failed.'
+                    });
+
+                }
+
+            },
+
+            error: function(xhr) {
+
+            console.log('HTTP ERROR:', xhr.status);
+            console.log('RAW RESPONSE:', xhr.responseText);
+
+            let message = 'Internal Server Error';
+
+            /*
+            * Coba ambil JSON dari response
+            */
+            if (xhr.responseJSON) {
+
+                message =
+                    xhr.responseJSON.message ||
+                    message;
+
+            } else {
+
+                /*
+                * Jika response berupa string JSON
+                */
+                try {
+
+                    const response =
+                        JSON.parse(xhr.responseText);
+
+                    message =
+                        response.message ||
+                        message;
+
+                } catch (e) {
+
+                    console.error(
+                        'Response bukan JSON:',
+                        xhr.responseText
+                    );
+
+                }
+
+            }
 
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Internal Server Error'
+                text: message
             });
 
         }
-    });
 
-});
-
-$(document).on('click', '.btnDelete', function () {
-
-    let row = $(this).closest('tr');
-
-    if (row.find('.activity-type').val() === 'DROPOFF') {
-        return;
+        });
     }
-
-    row.remove();
-
-    resetRoute();
-
-});
-
+);
 
 </script>
