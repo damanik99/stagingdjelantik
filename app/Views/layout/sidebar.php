@@ -77,9 +77,10 @@
         // Koneksi ke database
         $db = \Config\Database::connect();
         $userId = session()->get('users_id');
-        $admin = session()->get('first_name');
+        $admin = session()->get('fullname');
         $selectedProgramId = session()->get('program'); // Mendapatkan ID program yang dipilih
-
+        
+        
         if ($admin == 'Super Admin') {
             $query = "SELECT c.program_id, c.name, e.picture
                         FROM users a
@@ -113,6 +114,15 @@
         }
         ?>
             </select>
+<?php
+//             echo '<pre>';
+// print_r([
+//     'program'     => session()->get('program'),
+//     'nameprogram' => session()->get('nameprogram'),
+// ]);
+// echo '</pre>';
+// exit; 
+?>
         </form>
         <?php
         $db = \Config\Database::connect();

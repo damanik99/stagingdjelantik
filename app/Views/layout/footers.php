@@ -92,9 +92,15 @@ function setValue() {
             $("#global-loader").show();
         },
         success: function(data) {
-            location.reload();
             console.log(data);
+            location.reload();
             $("#global-loader").hide();
+        },
+         error: function(xhr, status, error) {
+            console.log('AJAX ERROR');
+            console.log('STATUS:', status);
+            console.log('ERROR:', error);
+            console.log('RESPONSE:', xhr.responseText);
         }
     });
 

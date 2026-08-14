@@ -274,4 +274,122 @@ class ShipmentModel extends Model
         return $this->db->query($sql, [$shipmentId])->getRowArray();
     }
 
+    public function driverShipmentDetail($shipmentId)
+    {
+        return $this->db->table('shipment_detail a')
+            ->select('
+                a.*,
+                b.shipment_number,
+                d.warehouse_name,
+                o.organization_name,
+                e.status_code,
+                e.status_name,
+                o.address AS address
+            ')
+            ->join('shipment b', 'a.shipment_id = b.shipment_id')
+            ->join(
+                'organization_program c',
+                'a.organization_program_id = c.organization_program_id',
+                'left'
+            )
+            ->join(
+                'organization o',
+                'c.organization_id = o.organization_id',
+                'left'
+            )
+            ->join(
+                'warehouse d',
+                'a.warehouse_id = d.warehouse_id',
+                'left'
+            )
+            ->join(
+                'status e',
+                'a.status_id = e.status_id'
+            )
+            ->where('a.shipment_id', $shipmentId)
+            ->orderBy('a.sequence_no', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
+
+    public function driverSipment($driverId)
+    {
+        $sql = "
+            SELECT a.*, d.driver_name, v.plate_number, s.status_id, s.status_code 
+            FROM shipment a
+            JOIN driver d ON a.driver_id = d.driver_id
+            JOIN vehicle v ON a.vehicle_id = v.vehicle_id
+            JOIN status s ON a.status_id = s.status_id
+            WHERE a.driver_id = ?
+        ";
+
+        return $this->db->query($sql, [$driverId])->getResultArray();
+    }
+
+    public function driverShipmentById($shipmentId)
+    {
+        return $this->db->table('shipment a')
+            ->select('
+                a.*,
+                d.driver_name,
+                v.plate_number,
+                s.status_code
+            ')
+            ->join('driver d', 'a.driver_id = d.driver_id', 'left')
+            ->join('vehicle v', 'a.vehicle_id = v.vehicle_id', 'left')
+            ->join('status s', 'a.status_id = s.status_id', 'left')
+            ->where('a.shipment_id', $shipmentId)
+            ->get()
+            ->getRowArray();
+    }
+
+    public function driverDestination($shipmentDetailId)
+    {
+        return $this->db->table('shipment_detail a')
+            ->select('
+                a.*,
+                b.shipment_number,
+
+                d.warehouse_name,
+                d.address AS warehouse_address,
+                d.latitude AS warehouse_latitude,
+                d.longitude AS warehouse_longitude,
+
+                o.organization_name,
+                o.address AS organization_address,
+                o.latitude AS organization_latitude,
+                o.longitude AS organization_longitude,
+
+                e.status_code
+            ')
+            ->join(
+                'shipment b',
+                'a.shipment_id = b.shipment_id',
+                'left'
+            )
+            ->join(
+                'organization_program c',
+                'a.organization_program_id = c.organization_program_id',
+                'left'
+            )
+            ->join(
+                'organization o',
+                'c.organization_id = o.organization_id',
+                'left'
+            )
+            ->join(
+                'warehouse d',
+                'a.warehouse_id = d.warehouse_id',
+                'left'
+            )
+            ->join(
+                'status e',
+                'a.status_id = e.status_id',
+                'left'
+            )
+            ->where('a.shipment_detail_id', $shipmentDetailId)
+            ->get()
+            ->getRowArray();
+    }
+
 }

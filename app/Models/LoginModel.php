@@ -10,6 +10,14 @@ class LoginModel extends Model
     protected $allowedFields = ['usercode', 'username', 'password'];
 
     public function getUser($username)
+    {
+        return $this->db->table('users')
+            ->where('username', $username)
+            ->get()
+            ->getRowArray();
+    }
+
+    public function getUsers($username)
     { 
         $sql    = "SELECT * FROM users WHERE username='$username'";
         $query  = $this->db->query($sql);
