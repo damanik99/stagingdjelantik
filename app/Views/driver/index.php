@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LogiMove — My Shipment</title>
+    <title>Djelantik</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="<?= base_url() ?>/teamplate/assets/mobile.css" rel="stylesheet" />
 </head>
+
 <?php /** @var array $shipments */ ?>
 
 <body>
@@ -28,7 +29,7 @@
         <div class="screen" style="display:flex;">
             <!-- Header -->
             <div class="app-header">
-                <span class="title">My Shipment</span>
+                <span class="title">Djelantik Driver</span>
                 <button class="more-btn"><i class="bi bi-bell"></i></button>
             </div>
 
@@ -58,7 +59,12 @@
                             case 'RTDT':
                                 $badgeClass = 'badge-on-delivery';
                                 $dotClass   = 'orange';
-                                $statusText = 'ON DELIVERY';
+                                $statusText = 'IN PROGGRES';
+                                break;
+                            case 'SDLPN':
+                                $badgeClass = 'badge-delivery';
+                                $dotClass = 'green';
+                                $statusText = 'DELIVERY';
                                 break;
                             default:
                                 $badgeClass = 'badge-pending';
@@ -91,12 +97,9 @@
 
                         <!-- Route -->
                         <div class="route-mini">
-
                             <?php foreach ($shipment['details'] as $index => $detail): ?>
-
                                 <?php
                                     $isLast = ($index === count($shipment['details']) - 1);
-
                                     /*
                                     * PICKUP  -> organization
                                     * DROPOFF -> warehouse
@@ -137,9 +140,7 @@
                                 <?php if (!$isLast): ?>
                                     <div class="route-arrow">↓</div>
                                 <?php endif; ?>
-
                             <?php endforeach; ?>
-
                         </div>
 
 
@@ -189,7 +190,6 @@
                     <i class="bi bi-person"></i> Profile
                 </a>
             </div>
-
         </div><!-- /screen -->
 
     </div><!-- /phone-frame -->
@@ -203,7 +203,6 @@
                 // In real app: filter shipment cards based on selection
             });
         });
-
         // ── Offline Simulation (toggle with comment/uncomment) ──
         // Uncomment below to test offline banner:
         // document.getElementById('offline-banner').style.display = 'flex';

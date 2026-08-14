@@ -348,7 +348,9 @@ class ShipmentModel extends Model
         return $this->db->table('shipment_detail a')
             ->select('
                 a.*,
+
                 b.shipment_number,
+                b.driver_id,
 
                 d.warehouse_name,
                 d.address AS warehouse_address,
@@ -360,6 +362,7 @@ class ShipmentModel extends Model
                 o.latitude AS organization_latitude,
                 o.longitude AS organization_longitude,
 
+                e.status_id,
                 e.status_code
             ')
             ->join(
@@ -387,9 +390,41 @@ class ShipmentModel extends Model
                 'a.status_id = e.status_id',
                 'left'
             )
-            ->where('a.shipment_detail_id', $shipmentDetailId)
+            ->where(
+                'a.shipment_detail_id',
+                $shipmentDetailId
+            )
             ->get()
             ->getRowArray();
     }
+
+    public function getStatusByCode($statusCode)
+    {
+        return $this->db->table('status')
+            ->where('status_code', $statusCode)
+            ->get()
+            ->getRowArray();
+    }
+
+    public function updateShipmentDetailStatusByCode($shipmentDetailId, $statusCode)
+    {
+        $status = $this->db->table('status')
+            ->where('status_code', $statusCode)
+            ->get()
+            ->getRowArray();
+
+        if (!$status) {
+            return false;
+        }
+
+        return $this->db->table('shipment_detail')
+            ->where('shipment_detail_id', $shipmentDetailId)
+            ->update([
+                'status_id' => $status['status_id'],
+                'modified_date' => date('Y-m-d H:i:s'),
+            ]);
+    }
+
+
 
 }

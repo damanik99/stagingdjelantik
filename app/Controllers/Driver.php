@@ -108,10 +108,10 @@ class Driver extends BaseController
         ]);
     }
 
+    // START DESTINATION
     public function destination($shipmentDetailId)
     {
-        $destination = $this->shipment
-            ->driverDestination($shipmentDetailId);
+        $destination = $this->shipment->driverDestination($shipmentDetailId);
 
         if (!$destination) {
             return redirect()
@@ -122,8 +122,7 @@ class Driver extends BaseController
         /*
         * Hitung total destination dalam shipment
         */
-        $details = $this->shipment
-            ->driverShipmentDetail($destination['shipment_id']);
+        $details = $this->shipment->driverShipmentDetail($destination['shipment_id']);
 
         $totalDestination = count($details);
 
@@ -133,8 +132,95 @@ class Driver extends BaseController
         ]);
     }
 
+    public function startDelivery($shipmentDetailId)
+    {
+        $destination = $this->shipment
+            ->driverDestination($shipmentDetailId);
+
+        if (!$destination) {
+            return redirect()
+                ->back()
+                ->with('error', 'Destination tidak ditemukan.');
+        }
+
+        $driverId = session()->get('driver_id');
+
+        // Pastikan shipment milik driver yang login
+        if ((int) $destination['driver_id'] !== (int) $driverId) {
+            return redirect()
+                ->back()
+                ->with('error', 'Shipment bukan milik driver ini.');
+        }
+
+        $updated = $this->shipment
+            ->updateShipmentDetailStatusByCode(
+                $shipmentDetailId,
+                'SDLPN'
+            );
+
+        if (!$updated) {
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal memulai delivery.');
+        }
+
+        return redirect()
+            ->to(
+                base_url(
+                    'driver/destination/' . $shipmentDetailId
+                )
+            )
+            ->with('success', 'Delivery dimulai.');
+    }
+
+    public function cancelDelivery($shipmentDetailId)
+    {
+        $destination = $this->shipment
+            ->driverDestination($shipmentDetailId);
+
+        if (!$destination) {
+            return redirect()
+                ->back()
+                ->with('error', 'Destination tidak ditemukan.');
+        }
+
+        $driverId = session()->get('driver_id');
+
+        if ((int) $destination['driver_id'] !== (int) $driverId) {
+            return redirect()
+                ->back()
+                ->with('error', 'Shipment bukan milik driver ini.');
+        }
+
+        $updated = $this->shipment
+            ->updateShipmentDetailStatusByCode(
+                $shipmentDetailId,
+                'RTDT'
+            );
+
+        if (!$updated) {
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal membatalkan delivery.');
+        }
+
+        return redirect()
+            ->to(
+                base_url(
+                    'driver/destination/' . $shipmentDetailId
+                )
+            )
+            ->with('success', 'Delivery dibatalkan.');
+    }
+    // END DESTINATION
+
     public function quantity()
     {
         return view('driver/quantity');
+    }
+
+    public function arrival()
+    {
+        return view('driver/arrival');
     }
 }

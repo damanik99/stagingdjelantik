@@ -51,7 +51,12 @@
                             } elseif ($shipmentStatus === 'RTDT') {
                                 $badgeClass = 'badge-on-delivery';
                                 $dotClass = 'orange';
-                                $statusText = 'ON DELIVERY';
+                                $statusText = 'IN PROGGRES';
+
+                            } elseif ($shipmentStatus === 'SDLPN') {
+                                $badgeClass = 'badge-delivery';
+                                $dotClass = 'green';
+                                $statusText = 'DELIVERY';
 
                             } else {
                                 $badgeClass = 'badge-pending';
@@ -145,13 +150,20 @@
 
                         } elseif (
                             $detailStatus === 'RTDT' ||
-                            $detailStatus === 'SDLPN' ||
                             $detailStatus === 'INPRS'
                         ) {
 
                             $timelineClass = '';
                             $statusClass = 'now';
                             $statusText = '● Pickup';
+
+                        } elseif (
+                            $detailStatus === 'SDLPN'
+                        ) {
+
+                            $timelineClass = '';
+                            $statusClass = 'delivery';
+                            $statusText = '● Delivery';
 
                         } else {
 
@@ -160,13 +172,6 @@
                             $statusText = '○ Pending';
                         }
 
-
-                        /*
-                        * Address
-                        *
-                        * Sesuaikan dengan nama field address
-                        * yang ada di tabel organization / warehouse.
-                        */
                         if ($activityType === 'PICKUP') {
 
                             $destinationAddress =
@@ -186,16 +191,14 @@
                         /*
                         * Apakah destination ini yang sedang aktif?
                         */
-                        $isCurrent = $detailStatus === 'INPRS' || $detailStatus === 'RTDT';
+                        $isCurrent = $detailStatus === 'INPRS' || $detailStatus === 'RTDT' ||$detailStatus === 'SDLPN';
+                        
                     ?>
 
 
                     <?php if ($isCurrent): ?>
 
-                        <a href="<?= base_url(
-                                'driver/destination/' .
-                                $detail['shipment_detail_id']
-                            ) ?>"
+                        <a href="<?= base_url('driver/destination/'.$detail['shipment_detail_id']) ?>"
                             class="timeline-item <?= $timelineClass ?>"
                         >
 

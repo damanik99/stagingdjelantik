@@ -1,87 +1,83 @@
 <!DOCTYPE html>
 <html lang="id">
-  <head>
-      <meta charset="UTF-8">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <title>Destination</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+        <link href="<?= base_url() ?>/teamplate/assets/mobile.css" rel="stylesheet"/>
+        <?php /** @var array $destination */ ?> 
+        <?php /** @var array $totalDestination */ ?> 
+        <?php /** @var array $destinationStatus */ ?> 
+    </head>
 
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <body>
 
-      <title>Destination</title>
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <?php
 
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+        /*
+        * Data destination
+        */
+        $activityType = strtoupper($destination['activity_type'] ?? '');
 
-      <link href="<?= base_url() ?>/teamplate/assets/mobile.css" rel="stylesheet"/>
+            $destinationStatus = strtoupper(
+                $destination['status_code'] ?? ''
+            );
 
-      <?php /** @var array $destination */ ?> 
-      <?php /** @var array $totalDestination */ ?> 
-  </head>
+        /*
+        * Tentukan nama destination
+        */
+        if ($activityType === 'PICKUP') {
 
-  <body>
+            $destinationName =
+                $destination['organization_name'] ?? '-';
 
-  <?php
+            $destinationAddress =
+                $destination['organization_address'] ?? '-';
 
-      /*
-      * Data destination
-      */
-      $activityType = strtoupper($destination['activity_type'] ?? '');
+            $latitude =
+                $destination['organization_latitude'] ?? null;
 
-      $statusCode = strtoupper(
-          $destination['status_code'] ?? ''
-      );
+            $longitude =
+                $destination['organization_longitude'] ?? null;
 
-      /*
-      * Tentukan nama destination
-      */
-      if ($activityType === 'PICKUP') {
+        } elseif ($activityType === 'DROPOFF') {
 
-          $destinationName =
-              $destination['organization_name'] ?? '-';
+            $destinationName =
+                $destination['warehouse_name'] ?? '-';
 
-          $destinationAddress =
-              $destination['organization_address'] ?? '-';
+            $destinationAddress =
+                $destination['warehouse_address'] ?? '-';
 
-          $latitude =
-              $destination['organization_latitude'] ?? null;
+            $latitude =
+                $destination['warehouse_latitude'] ?? null;
 
-          $longitude =
-              $destination['organization_longitude'] ?? null;
+            $longitude =
+                $destination['warehouse_longitude'] ?? null;
 
-      } elseif ($activityType === 'DROPOFF') {
+        } else {
 
-          $destinationName =
-              $destination['warehouse_name'] ?? '-';
+            $destinationName =
+                $destination['organization_name']
+                ?? $destination['warehouse_name']
+                ?? '-';
 
-          $destinationAddress =
-              $destination['warehouse_address'] ?? '-';
+            $destinationAddress =
+                $destination['organization_address']
+                ?? $destination['warehouse_address']
+                ?? '-';
 
-          $latitude =
-              $destination['warehouse_latitude'] ?? null;
+            $latitude =
+                $destination['organization_latitude']
+                ?? $destination['warehouse_latitude']
+                ?? null;
 
-          $longitude =
-              $destination['warehouse_longitude'] ?? null;
-
-      } else {
-
-          $destinationName =
-              $destination['organization_name']
-              ?? $destination['warehouse_name']
-              ?? '-';
-
-          $destinationAddress =
-              $destination['organization_address']
-              ?? $destination['warehouse_address']
-              ?? '-';
-
-          $latitude =
-              $destination['organization_latitude']
-              ?? $destination['warehouse_latitude']
-              ?? null;
-
-          $longitude =
-              $destination['organization_longitude']
-              ?? $destination['warehouse_longitude']
-              ?? null;
-      }
+            $longitude =
+                $destination['organization_longitude']
+                ?? $destination['warehouse_longitude']
+                ?? null;
+        }
 
 
       /*
@@ -102,12 +98,10 @@
               . urlencode($destinationAddress);
       }
 
-
       /*
       * Sequence
       */
-      $sequence =
-          (int) ($destination['sequence_no'] ?? 0);
+      $sequence = (int) ($destination['sequence_no'] ?? 0);
 
   ?>
 
@@ -139,109 +133,151 @@
               >
                   <i class="bi bi-geo-alt"></i>
               </a>
+          </div>
+
+
+        <!-- Main Content -->
+        <div class="main-content has-action-bar">
+
+            <!-- Destination Info -->
+            <div class="dest-summary mb-12">
+                <span class="badge-status badge-current mb-8">
+                    <span class="status-dot blue"></span>
+                    <?= esc($activityType) ?>
+                </span>
+                
+                <?php if ($destinationStatus === 'SDLPN'): ?>
+                    
+                <span class="badge-status badge-delivery mb-8">
+                    <span class="status-dot green"></span>
+                    Delivery
+                </span>
+
+                <?php endif; ?>
+                <h5 class="fw-700 mt-8 mb-4" style="font-size:1.25rem;">
+                    <?= esc($destinationName) ?>
+                </h5>
+
+
+                <p class="text-muted mb-0" style="font-size:0.85rem;">
+                    📍 <?= esc($destinationAddress) ?>
+                </p>
+
+            </div>
+
+            <!-- Google Maps -->
+            <a href="<?= esc($googleMapsUrl) ?>" target="_blank" class="btn-outline-custom mt-8 mb-12">
+                <i class="bi bi-geo-alt-fill"></i>Buka Google Maps
+            </a>
+
+
+            <!-- Activity & Sequence -->
+            <div class="d-flex gap-8 mb-12">
+
+                <!-- Activity -->
+                <div class="dest-summary flex-fill text-center">
+                    <div class="section-label">
+                        Activity
+                    </div>
+                    <div class="section-value">
+                        <?= esc($activityType) ?>
+                    </div>
+                </div>
+
+
+                <!-- Sequence -->
+                <div class="dest-summary flex-fill text-center">
+                    <div class="section-label">
+                        Sequence
+                    </div>
+
+                    <div class="section-value">
+                        <?= sprintf('%02d', $sequence) ?>
+                        /
+                        <?= sprintf(
+                            '%02d',
+                            $totalDestination
+                        ) ?>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="mb-12">
+                <?php if ($destinationStatus === 'SDLPN'): ?>
+                    <div class="dest-summary text-center mb-12" style="background: #deffdd;">
+                        <div class="section-label">
+                            Status
+                        </div>
+                        <div class="section-value" style="color: #0f810b;">
+                            Delivery
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
 
           </div>
 
 
-          <!-- Main Content -->
-          <div class="main-content has-action-bar">
+        <!-- Bottom Action Bar -->
 
-              <!-- Destination Info -->
-              <div class="dest-summary mb-12">
+        <div class="bottom-action-bar">
+            <?php if ($destinationStatus === 'SDLPN'): ?>
+                <div class="d-flex gap-8">
+                    <form action="<?= base_url('driver/arrival/'.$destination['shipment_detail_id']) ?>"
+                        method="post"
+                        class="flex-fill">
+                        <?= csrf_field() ?>
 
-                  <span class="badge-status badge-on-delivery mb-8">
+                        <button type="submit"
+                            class="btn-action btn-action-delivery w-100"
+                        >
+                            SUDAH SAMPAI
+                        </button>
+                    </form>
 
-                      <span class="status-dot orange"></span>
+                    <form
+                        action="<?= base_url(
+                            'driver/cancelDelivery/' .
+                            $destination['shipment_detail_id']
+                        ) ?>"
+                        method="post"
+                        class="flex-fill"
+                    >
+                        <?= csrf_field() ?>
 
-                      <?= esc($activityType) ?>
+                        <button type="submit" class="btn-action w-100"
+                            style="
+                                background:#fff;
+                                color:#0f810b;
+                                border:1px solid #0f810b;
+                            "
+                        >
+                            BATALKAN
+                        </button>
+                    </form>
+                </div>
+            <?php else: ?>
 
-                  </span>
+                <form
+                    action="<?= base_url(
+                        'driver/startDelivery/'.
+                        $destination['shipment_detail_id']
+                    ) ?>"
+                    method="post"
+                >
+                    <?= csrf_field() ?>
 
+                    <button type="submit" class="btn-action btn-action-primary d-block text-center w-100">
+                        MULAI TUJUAN
+                    </button>
+                </form>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
 
-                  <h5 class="fw-700 mt-8 mb-4" style="font-size:1.25rem;">
-                      <?= esc($destinationName) ?>
-                  </h5>
+</body>
 
-
-                  <p class="text-muted mb-0" style="font-size:0.85rem;">
-                      📍 <?= esc($destinationAddress) ?>
-                  </p>
-
-              </div>
-
-              <!-- Google Maps -->
-              <a href="<?= esc($googleMapsUrl) ?>" target="_blank" class="btn-outline-custom mt-8 mb-12">
-                  <i class="bi bi-geo-alt-fill"></i>Buka Google Maps
-              </a>
-
-
-              <!-- Activity & Sequence -->
-              <div class="d-flex gap-8 mb-12">
-
-                  <!-- Activity -->
-                  <div class="dest-summary flex-fill text-center">
-                      <div class="section-label">
-                          Activity
-                      </div>
-                      <div class="section-value">
-                          <?= esc($activityType) ?>
-                      </div>
-                  </div>
-
-
-                  <!-- Sequence -->
-                  <div class="dest-summary flex-fill text-center">
-                      <div class="section-label">
-                          Sequence
-                      </div>
-
-                      <div class="section-value">
-                          <?= sprintf('%02d', $sequence) ?>
-                          /
-                          <?= sprintf(
-                              '%02d',
-                              $totalDestination
-                          ) ?>
-
-                      </div>
-
-                  </div>
-
-              </div>
-
-          </div>
-
-
-          <!-- Bottom Action Bar -->
-
-          <div class="bottom-action-bar">
-
-              <?php if ($statusCode === 'SCMPL'): ?>
-
-                  <div
-                      class="btn-action d-block text-center"
-                      style="
-                          background:#e8f8f1;
-                          color:#00966d;
-                      "
-                  >
-                      ✓ TUJUAN SELESAI
-                  </div>
-
-              <?php else: ?>
-
-                  <a href="<?= base_url('driver/quantity/' .$destination['shipment_detail_id']) ?>"
-                      class="btn-action btn-action-primary d-block text-center">
-                      MULAI TUJUAN
-                  </a>
-
-              <?php endif; ?>
-
-          </div>
-
-      </div>
-
-  </div>
-
-  </body>
 </html>
