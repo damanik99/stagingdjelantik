@@ -10,7 +10,7 @@
     <link href="<?= base_url() ?>/teamplate/assets/mobile.css" rel="stylesheet" />
 
     <?php /** @var array $shipment */ ?>
-    <?php /** @var string $completedDestination */ ?> 
+    <?php /** @var string $completedDestination */ ?>
     <?php /** @var string $totalDestination */ ?>
     <?php /** @var string $progress */ ?>
     <?php /** @var array $details */ ?>
@@ -40,29 +40,27 @@
                         </span>
 
                         <?php
-                            $shipmentStatus = strtoupper($shipment['status_code'] ?? ''
-                            );
+                        $shipmentStatus = strtoupper(
+                            $shipment['status_code'] ?? ''
+                        );
 
-                            if ($shipmentStatus === 'SCMPL') {
-                                $badgeClass = 'badge-completed';
-                                $dotClass = 'green';
-                                $statusText = 'COMPLETED';
-
-                            } elseif ($shipmentStatus === 'RTDT') {
-                                $badgeClass = 'badge-on-delivery';
-                                $dotClass = 'orange';
-                                $statusText = 'IN PROGGRES';
-
-                            } elseif ($shipmentStatus === 'SDLPN') {
-                                $badgeClass = 'badge-delivery';
-                                $dotClass = 'green';
-                                $statusText = 'DELIVERY';
-
-                            } else {
-                                $badgeClass = 'badge-pending';
-                                $dotClass = 'gray';
-                                $statusText = $shipmentStatus ?: 'PENDING';
-                            }
+                        if ($shipmentStatus === 'SCMPL') {
+                            $badgeClass = 'badge-completed';
+                            $dotClass = 'green';
+                            $statusText = 'COMPLETED';
+                        } elseif ($shipmentStatus === 'RTDT') {
+                            $badgeClass = 'badge-on-delivery';
+                            $dotClass = 'orange';
+                            $statusText = 'IN PROGGRES';
+                        } elseif ($shipmentStatus === 'SDLPN') {
+                            $badgeClass = 'badge-delivery';
+                            $dotClass = 'green';
+                            $statusText = 'DELIVERY';
+                        } else {
+                            $badgeClass = 'badge-pending';
+                            $dotClass = 'gray';
+                            $statusText = $shipmentStatus ?: 'PENDING';
+                        }
                         ?>
 
                         <span class="badge-status <?= $badgeClass ?>">
@@ -102,175 +100,267 @@
                     <div class="progress-custom mt-8">
                         <div
                             class="fill"
-                            style="width:<?= $progress ?>%;"
-                        ></div>
+                            style="width:<?= $progress ?>%;"></div>
                     </div>
 
                 </div>
 
+                <?php
+                $allPickupCompleted = true;
+
+                foreach ($details as $detail) {
+                    $activityType = strtoupper($detail['activity_type'] ?? '');
+                    $detailStatus = strtoupper($detail['status_code'] ?? '');
+
+                    if (
+                        $activityType === 'PICKUP'
+                        && $detailStatus !== 'SCMPL'
+                    ) {
+                        $allPickupCompleted = false;
+                        break;
+                    }
+                }
+                ?>
 
                 <!-- Destination List -->
                 <?php foreach ($details as $index => $detail): ?>
+
                     <?php
-                        $activityType = strtoupper($detail['activity_type'] ?? '');
+                    $activityType = strtoupper(
+                        $detail['activity_type'] ?? ''
+                    );
 
-                        /*
-                        * Tentukan nama tujuan
-                        */
+                    $detailStatus = strtoupper(
+                        $detail['status_code'] ?? ''
+                    );
+
+
+                    /*
+                    * Nama destination
+                    */
+                    if ($activityType === 'PICKUP') {
+
+                        $destinationName =
+                            $detail['organization_name'] ?? '-';
+                    } elseif ($activityType === 'DROPOFF') {
+
+                        $destinationName =
+                            $detail['warehouse_name'] ?? '-';
+                    } else {
+
+                        $destinationName =
+                            $detail['warehouse_name']
+                            ?? $detail['organization_name']
+                            ?? '-';
+                    }
+
+                    /*
+                    * Address
+                    */
+                    if ($activityType === 'PICKUP') {
+
+                        $destinationAddress =
+                            $detail['address'] ?? '-';
+                    } else {
+
+                        $destinationAddress =
+                            $detail['warehouse_address']
+                            ?? $detail['address']
+                            ?? '-';
+                    }
+
+                    /*
+                    * Status UI
+                    */
+                    if ($detailStatus === 'SCMPL') {
+
+                        $timelineClass = 'completed';
+                        $statusClass   = 'done';
+                        $statusText    = '✓ Completed';
+                    } elseif (
+                        $detailStatus === 'RTDT'
+                        || $detailStatus === 'INPRS'
+                    ) {
+
+                        $timelineClass = '';
+                        $statusClass   = 'now';
+
                         if ($activityType === 'PICKUP') {
-                            $destinationName = $detail['organization_name'] ?? '-';
-
-                        } elseif ($activityType === 'DROPOFF') {
-
-                            $destinationName =
-                                $detail['warehouse_name'] ?? '-';
-
-                        } else {
-
-                            $destinationName =
-                                $detail['warehouse_name']
-                                ?? $detail['organization_name']
-                                ?? '-';
-                        }
-                        /*
-                        * Status detail
-                        */
-                        $detailStatus = strtoupper(
-                            $detail['status_code'] ?? ''
-                        );
-
-                        /*
-                        * Tentukan class status
-                        */
-                        if ($detailStatus === 'SCMPL') {
-
-                            $timelineClass = 'completed';
-                            $statusClass = 'done';
-                            $statusText = '✓ Completed';
-
-                        } elseif (
-                            $detailStatus === 'RTDT' ||
-                            $detailStatus === 'INPRS'
-                        ) {
-
-                            $timelineClass = '';
-                            $statusClass = 'now';
                             $statusText = '● Pickup';
+                        } else {
+                            $statusText = '● Pending';
+                        }
+                    } elseif ($detailStatus === 'SDLPN') {
 
-                        } elseif (
-                            $detailStatus === 'SDLPN'
+                        $timelineClass = '';
+                        $statusClass   = 'delivery';
+                        $statusText    = '● Delivery';
+                    } else {
+
+                        $timelineClass = '';
+                        $statusClass   = 'wait';
+                        $statusText    = '○ Pending';
+                    }
+
+                    /*
+                    * Tentukan apakah destination boleh diklik
+                    *
+                    * PICKUP:
+                    *   RTDT / INPRS / SDLPN → boleh
+                    *
+                    * DROPOFF:
+                    *   hanya boleh setelah semua PICKUP SCMPL
+                    *   dan statusnya RTDT / INPRS / SDLPN
+                    */
+                    $isCurrent = false;
+
+                    if ($activityType === 'PICKUP') {
+
+                        if (
+                            $detailStatus === 'RTDT'
+                            || $detailStatus === 'INPRS'
+                            || $detailStatus === 'SDLPN'
                         ) {
-
-                            $timelineClass = '';
-                            $statusClass = 'delivery';
-                            $statusText = '● Delivery';
-
-                        } else {
-
-                            $timelineClass = '';
-                            $statusClass = 'wait';
-                            $statusText = '○ Pending';
+                            $isCurrent = true;
                         }
+                    } elseif ($activityType === 'DROPOFF') {
 
-                        if ($activityType === 'PICKUP') {
-
-                            $destinationAddress =
-                                $detail['address']
-                                ?? $detail['address']
-                                ?? '-';
-
-                        } else {
-
-                            $destinationAddress =
-                                $detail['warehouse_address']
-                                ?? $detail['address']
-                                ?? '-';
+                        if (
+                            $allPickupCompleted
+                            && (
+                                $detailStatus === 'RTDT'
+                                || $detailStatus === 'INPRS'
+                                || $detailStatus === 'SDLPN'
+                            )
+                        ) {
+                            $isCurrent = true;
                         }
-
-
-                        /*
-                        * Apakah destination ini yang sedang aktif?
-                        */
-                        $isCurrent = $detailStatus === 'INPRS' || $detailStatus === 'RTDT' ||$detailStatus === 'SDLPN';
-                        
+                    }
                     ?>
 
 
                     <?php if ($isCurrent): ?>
 
-                        <a href="<?= base_url('driver/destination/'.$detail['shipment_detail_id']) ?>"
-                            class="timeline-item <?= $timelineClass ?>"
-                        >
+                        <a
+                            href="<?= base_url(
+                                        'driver/destination/' .
+                                            $detail['shipment_detail_id']
+                                    ) ?>"
+                            class="timeline-item <?= $timelineClass ?>">
 
-                    <?php else: ?>
+                        <?php else: ?>
 
-                        <div class="timeline-item <?= $timelineClass ?>">
+                            <div class="timeline-item <?= $timelineClass ?>">
 
-                    <?php endif; ?>
+                            <?php endif; ?>
 
-                        <!-- Activity -->
-                        <div class="timeline-label">
-                            <?= esc($activityType) ?>
-                        </div>
 
-                        <!-- Destination Name -->
-                        <div class="timeline-name">
-                            <?= esc($destinationName) ?>
-                        </div>
+                            <!-- Activity -->
+                            <div class="timeline-label">
+                                <?= esc($activityType) ?>
+                            </div>
 
-                        <!-- Address -->
-                        <div class="timeline-addr">
-                            <?= esc($destinationAddress) ?>
-                        </div>
 
-                        <!-- Status -->
-                        <div class="timeline-status <?= $statusClass ?>">
-                            <?= esc($statusText) ?>
-                        </div>
+                            <!-- Destination Name -->
+                            <div class="timeline-name">
+                                <?= esc($destinationName) ?>
+                            </div>
 
-                        <!-- Action -->
-                        <?php if ($isCurrent): ?>
-                            <span class="btn-timeline-action">
-                                Lihat Tujuan →
-                            </span>
-                        <?php endif; ?>
-                    <?php if ($isCurrent): ?>
+
+                            <!-- Address -->
+                            <div class="timeline-addr">
+                                <?= esc($destinationAddress) ?>
+                            </div>
+
+
+                            <!-- Status -->
+                            <div class="timeline-status <?= $statusClass ?>">
+                                <?= esc($statusText) ?>
+                            </div>
+
+
+                            <!-- Action -->
+                            <?php if ($isCurrent): ?>
+
+                                <span class="btn-timeline-action">
+                                    Lihat Tujuan →
+                                </span>
+
+                            <?php endif; ?>
+
+
+                            <?php if ($isCurrent): ?>
+
                         </a>
+
                     <?php else: ?>
-                        </div>
-                    <?php endif; ?>
-                <?php endforeach; ?>
+
             </div>
 
-            <!-- Bottom Action Bar -->
-            <?php
-                /*
+        <?php endif; ?>
+
+    <?php endforeach; ?>
+        </div>
+
+        <!-- Bottom Action Bar -->
+        <?php
+        /*
                 * Cari destination pertama yang belum COMPLETED.
                 * Ini yang akan menjadi tujuan berikutnya.
                 */
-                $nextDestination = null;
+        $nextDestination = null;
 
-                foreach ($details as $detail) {
-                    if (($detail['status_code'] ?? '') !== 'COMPLETED') {
-                        $nextDestination = $detail;
-                        break;
-                    }
-                }
-            ?>
+        foreach ($details as $detail) {
 
-            <?php if ($nextDestination): ?>
-                <div class="bottom-action-bar">
-                    <a href="<?= base_url('driver/destination/' .
-                            $nextDestination['shipment_detail_id']
-                        ) ?>"
-                        class="btn-action btn-action-primary d-block text-center">
-                        MULAI TUJUAN
-                        <?= esc($nextDestination['sequence_no']) ?>
-                    </a>
-                </div>
-            <?php endif; ?>
+            $activityType = strtoupper(
+                $detail['activity_type'] ?? ''
+            );
 
-        </div>
+            $detailStatus = strtoupper(
+                $detail['status_code'] ?? ''
+            );
+
+            if ($detailStatus === 'SCMPL') {
+                continue;
+            }
+
+            /*
+                * PICKUP boleh dimulai.
+                */
+            if ($activityType === 'PICKUP') {
+
+                $nextDestination = $detail;
+                break;
+            }
+
+            /*
+                * DROPOFF hanya boleh dimulai
+                * setelah semua PICKUP selesai.
+                */
+            if (
+                $activityType === 'DROPOFF'
+                && $allPickupCompleted
+            ) {
+
+                $nextDestination = $detail;
+                break;
+            }
+        }
+        ?>
+
+        <?php if ($nextDestination): ?>
+            <div class="bottom-action-bar">
+                <a href="<?= base_url(
+                                'driver/destination/' . $nextDestination['shipment_detail_id']
+                            ) ?>"
+                    class="btn-action btn-action-primary d-block text-center">
+                    MULAI TUJUAN
+                    <?= esc($nextDestination['sequence_no']) ?>
+                </a>
+            </div>
+        <?php endif; ?>
+
+    </div>
     </div>
 </body>
 

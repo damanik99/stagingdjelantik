@@ -2,22 +2,31 @@
 
 namespace App\Controllers;
 
+use App\Models\ShipmentTrackingModel;
 use App\Models\ShipmentModel;
+use App\Models\StatusModel;
+use App\Models\ShipmentDetailModel;
 
 class Driver extends BaseController
 {
     protected ShipmentModel $shipment;
+    protected ShipmentTrackingModel $shipmentTracking;
+    protected StatusModel $status;
+    protected ShipmentDetailModel $shipmentDetail;
 
     public function __construct()
     {
         $session = \Config\Services::session();
         if ($session->get('masuk') != true) {
             session()->setFlashdata('message', '<div class="alert alert-danger" role="alert">Maaf! Anda tidak memiliki hak akses ke sini! </div>');
-            header('Location: '.base_url('auth'));
+            header('Location: ' . base_url('auth'));
             exit();
         }
 
+        $this->shipmentTracking = new ShipmentTrackingModel();
         $this->shipment = new ShipmentModel();
+        $this->status = new StatusModel();
+        $this->shipmentDetail = new ShipmentDetailModel();
     }
 
     // public function index()
@@ -219,8 +228,106 @@ class Driver extends BaseController
         return view('driver/quantity');
     }
 
-    public function arrival()
+    public function arrival($shipmentDetailId)
     {
-        return view('driver/arrival');
+        $details = $this->shipment->driverDestination($shipmentDetailId);
+        // var_dump($details);
+        // exit;
+        return view('driver/arrival', [
+            'shipmentDetailId' => $shipmentDetailId
+        ]);
+    }
+
+    public function arrivalCreate($shipmentDetialId)
+    {
+        try {
+
+            $status = $this->status
+                ->where('module', 'SHIPMENT_TRACKING')
+                ->where('status_code', 'DLPN')
+                ->first();
+            // var_dump($status);exit;
+            if (!$status) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Status DLPN tidak ditemukan.'
+                ]);
+            }
+
+
+            $photo = $this->request->getFile('photo');
+
+            if (!$photo->isValid()) {
+                throw new \Exception('Photo wajib diupload.');
+            }
+
+            if (!$this->request->getPost('latitude')) {
+                throw new \Exception('Lokasi GPS belum diperoleh.');
+            }
+
+            if (!$this->request->getPost('volume')) {
+                throw new \Exception('Volume Tidak Boleh Kosong ');
+            }
+
+            $fileName = $photo->getRandomName();
+
+            if (!is_dir(ROOTPATH . 'public/upload/image/shipmenttracking')) {
+                mkdir(
+                    ROOTPATH . 'public/upload/image/shipmenttracking',
+                    0775,
+                    true
+                );
+            }
+
+            $photo->move(
+                FCPATH . 'upload/image/shipmenttracking',
+                $fileName
+            );
+
+            $shipmentId = $this->request->getPost('shipment_id');
+
+            $insertData = [
+                'shipment_id' => $shipmentId,
+                'shipmen_detail_id' => $shipmentDetialId,
+                'photo'       => '/image/shipmenttracking/' . $fileName,
+                'latitude'    => $this->request->getPost('latitude'),
+                'longitude'   => $this->request->getPost('longitude'),
+                'location'    => $this->request->getPost('location'),
+                'notes'       => $this->request->getPost('notes'),
+                'status_id'   => $status['status_id'],
+                'created_by'  => session()->get('users_id')
+            ];
+
+            $this->shipmentTracking->insert($insertData);
+
+            $statusShipment = $this->status
+                ->where('module', 'SHIPMENT')
+                ->where('status_code', 'SCMPL')
+                ->first();
+
+            if (!$statusShipment) {
+                throw new \Exception('Status SDLPN tidak ditemukan.');
+            }
+            // var_dump($this->request->getPost());
+            // exit;
+            $this->shipmentDetail->update($shipmentDetialId, [
+                'status_id'     => $statusShipment['status_id'],
+                'qty'   => $this->request->getPost('volume'),
+                'unit'  => $this->request->getPost('unit'),
+                'modified_by'   => session()->get('users_id'),
+                'modified_date' => date('Y-m-d H:i:s')
+            ]);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'COMPLETED'
+            ]);
+        } catch (\Exception $e) {
+
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 }

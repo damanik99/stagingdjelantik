@@ -19,7 +19,7 @@ class ShipmentTracking extends BaseController
         $session = \Config\Services::session();
         if ($session->get('masuk') != true) {
             session()->setFlashdata('message', '<div class="alert alert-danger" role="alert">Maaf! Anda tidak memiliki hak akses ke sini! </div>');
-            header('Location: '.base_url('auth'));
+            header('Location: ' . base_url('auth'));
             exit();
         }
 
@@ -198,30 +198,30 @@ class ShipmentTracking extends BaseController
             switch (strtoupper($row['status_code'])) {
 
                 case 'PENDING':
-                    $badge = '<span class="badge badge-warning">'.$row['status_name'].'</span>';
+                    $badge = '<span class="badge badge-warning">' . $row['status_name'] . '</span>';
                     break;
 
                 case 'CHECKIN':
-                    $badge = '<span class="badge badge-info">'.$row['status_name'].'</span>';
+                    $badge = '<span class="badge badge-info">' . $row['status_name'] . '</span>';
                     break;
 
                 case 'CHECKOUT':
-                    $badge = '<span class="badge badge-primary">'.$row['status_name'].'</span>';
+                    $badge = '<span class="badge badge-primary">' . $row['status_name'] . '</span>';
                     break;
 
                 case 'DELIVERED':
-                    $badge = '<span class="badge badge-success">'.$row['status_name'].'</span>';
+                    $badge = '<span class="badge badge-success">' . $row['status_name'] . '</span>';
                     break;
 
                 default:
-                    $badge = '<span class="badge badge-secondary">'.$row['status_name'].'</span>';
+                    $badge = '<span class="badge badge-secondary">' . $row['status_name'] . '</span>';
             }
 
             $row['status_badge'] = $badge;
 
             $row['action'] = '
                 <a href="javascript:void(0)"
-                    class="btn bg-gray-dark btn-sm text-white btnImage" data-id="'.$row['shipment_id'].'">
+                    class="btn bg-gray-dark btn-sm text-white btnImage" data-id="' . $row['shipment_id'] . '">
                     <i class="fa fa-image"></i>
                 </a>
             ';
@@ -330,7 +330,6 @@ class ShipmentTracking extends BaseController
                 'success' => true,
                 'message' => 'Check-In berhasil disimpan.'
             ]);
-
         } catch (\Exception $e) {
 
             return $this->response->setJSON([
@@ -342,9 +341,9 @@ class ShipmentTracking extends BaseController
 
     public function arrived($shipmentId)
     {
-        
+
         $shipmentTrack = $this->shipment->getShipmentId($shipmentId);
-        
+
         $data = [
             'title'          => 'Check-In',
             'shipmentTrack' => $shipmentTrack
@@ -361,7 +360,7 @@ class ShipmentTracking extends BaseController
                 ->where('module', 'SHIPMENT_TRACKING')
                 ->where('status_code', 'SMBR')
                 ->first();
-            
+
             if (!$status) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -424,7 +423,6 @@ class ShipmentTracking extends BaseController
                 'success' => true,
                 'message' => 'Sudah sampai di buyer berhasil disimpan.'
             ]);
-
         } catch (\Exception $e) {
 
             return $this->response->setJSON([
@@ -528,7 +526,7 @@ class ShipmentTracking extends BaseController
             */
             $this->qualityControl->insert([
                 'shipment_id' => $shipmentId,
-                'company_name'=> $this->request->getPost('buyer'),
+                'company_name' => $this->request->getPost('buyer'),
                 'qc_type'     => 'Buyer',
                 'result'      => $this->request->getPost('result'),
                 'ffa'         => $this->request->getPost('ffa'),
@@ -546,11 +544,11 @@ class ShipmentTracking extends BaseController
             */
             $this->shipment->update($shipmentId, [
                 'qty_checkout' => $this->request->getPost('qtycheckout'),
-                'unit_checkout'=> $this->request->getPost('unit_checkout'),
+                'unit_checkout' => $this->request->getPost('unit_checkout'),
                 'arrival_at'   => date('Y-m-d H:i:s'),
                 'status_id'    => $statusShipment['status_id'],
                 'modified_by'  => session()->get('users_id'),
-                'modified_date'=> date('Y-m-d H:i:s')
+                'modified_date' => date('Y-m-d H:i:s')
             ]);
 
             /*
@@ -571,7 +569,6 @@ class ShipmentTracking extends BaseController
                 'success' => true,
                 'message' => 'Checkout berhasil disimpan.'
             ]);
-
         } catch (\Exception $e) {
 
             if ($this->db->transStatus()) {
@@ -588,8 +585,8 @@ class ShipmentTracking extends BaseController
     public function detailimage($id)
     {
         $photo = $this->db->table('shipment_tracking')
-                ->select('photo')
-                ->where('shipment_id', $id)->get()->getResultArray();
+            ->select('photo')
+            ->where('shipment_id', $id)->get()->getResultArray();
 
         $data = [
             'photo' => $photo
