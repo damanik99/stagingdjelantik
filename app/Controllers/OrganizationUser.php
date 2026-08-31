@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Models\OrganizationUserModel;
 use App\Models\OrganizationModel;
 use App\Models\OrganizationProgramModel;
-use App\Models\usersModel;
+use App\Models\UsersModel;
 
 use App\Models\ImportCsvFormModel;
 
