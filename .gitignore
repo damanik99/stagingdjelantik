@@ -124,4 +124,3 @@ _modules/*
 
 /results/
 /phpunit.xml
-/app/Models/OrganizationProgramModel.php
