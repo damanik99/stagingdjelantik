@@ -10,10 +10,10 @@ class Warehouse extends BaseController
 
     public function __construct()
     {
-         $session = \Config\Services::session();
+        $session = \Config\Services::session();
         if ($session->get('masuk') != true) {
             session()->setFlashdata('message', '<div class="alert alert-danger" role="alert">Maaf! Anda tidak memiliki hak akses ke sini! </div>');
-            header('Location: '.base_url('auth'));
+            header('Location: ' . base_url('auth'));
             exit();
         }
 
@@ -26,7 +26,7 @@ class Warehouse extends BaseController
         $date = date('Ymd');
 
         $last = $this->warehouse
-            ->like('warehouse_code', $prefix.'-'.$date, 'after')
+            ->like('warehouse_code', $prefix . '-' . $date, 'after')
             ->orderBy('warehouse_id', 'DESC')
             ->first();
 
@@ -38,13 +38,12 @@ class Warehouse extends BaseController
             );
 
             $seq = intval($lastNumber) + 1;
-
         } else {
 
             $seq = 1;
         }
 
-        return $prefix.'-'.$date.'-'.str_pad(
+        return $prefix . '-' . $date . '-' . str_pad(
             $seq,
             4,
             '0',
@@ -124,9 +123,7 @@ class Warehouse extends BaseController
             $request->getPost('order')[0]['dir'] ?? 'DESC';
 
         $orderBy =
-            $orderColumn[
-                $request->getPost('order')[0]['column'] ?? 4
-            ];
+            $orderColumn[$request->getPost('order')[0]['column'] ?? 4];
 
         $sql = "
             SELECT
@@ -156,12 +153,12 @@ class Warehouse extends BaseController
             $row['action'] = '
 
                 <a href="javascript:void(0);"
-                    class="btn bg-gray-dark btn-sm text-white mb-2 mb-xl-1 btnDetail" data-id="'.$row['warehouse_id'].'"
+                    class="btn bg-gray-dark btn-sm text-white mb-2 mb-xl-1 btnDetail" data-id="' . $row['warehouse_id'] . '"
                     title="Detail">
                     <i class="fa fa-eye"></i>
                 </a>
 
-                <a href="'.base_url().'/warehouse/edit/'.$row['warehouse_id'].'"
+                <a href="' . base_url() . '/warehouse/edit/' . $row['warehouse_id'] . '"
                     class="btn btn-cyan btn-sm text-white mb-2 mb-xl-1"
                     title="Edit">
                     <i class="fa fa-pencil"></i>
@@ -182,58 +179,58 @@ class Warehouse extends BaseController
 
     public function create()
     {
-        return view('warehouse/create',[
+        return view('warehouse/create', [
             'title' => 'Create Warehouse',
             'warehouse_code' =>
-                $this->generateWarehouseCode()
+            $this->generateWarehouseCode()
         ]);
     }
 
-    public function store()
+    public function save()
     {
         $rules = [
 
             'warehouse_name' =>
-                'required',
+            'required',
 
             'latitude' =>
-                'permit_empty|decimal',
+            'permit_empty|decimal',
 
             'longitude' =>
-                'permit_empty|decimal'
+            'permit_empty|decimal'
         ];
 
-        if(!$this->validate($rules)){
+        if (!$this->validate($rules)) {
 
             return $this->response->setJSON([
                 'status' => false,
                 'message' =>
-                    $this->validator->getErrors()
+                $this->validator->getErrors()
             ]);
         }
 
         $this->warehouse->insert([
 
             'warehouse_code' =>
-                $this->request->getPost('warehouse_code'),
+            $this->request->getPost('warehouse_code'),
 
             'warehouse_name' =>
-                $this->request->getPost('warehouse_name'),
+            $this->request->getPost('warehouse_name'),
 
             'address' =>
-                $this->request->getPost('address'),
+            $this->request->getPost('address'),
 
             'latitude' =>
-                $this->request->getPost('latitude'),
+            $this->request->getPost('latitude'),
 
             'longitude' =>
-                $this->request->getPost('longitude'),
+            $this->request->getPost('longitude'),
 
             'is_active' =>
-                $this->request->getPost('is_active'),
+            $this->request->getPost('is_active'),
 
             'created_by' =>
-                session()->get('user_id')
+            session()->get('user_id')
         ]);
 
         return $this->response->setJSON([
@@ -252,7 +249,8 @@ class Warehouse extends BaseController
             ->first();
 
         return view(
-            'warehouse/detail', $data
+            'warehouse/detail',
+            $data
         );
     }
 
@@ -288,22 +286,22 @@ class Warehouse extends BaseController
         $this->warehouse->update($id, [
 
             'warehouse_name' =>
-                $this->request->getPost('warehouse_name'),
+            $this->request->getPost('warehouse_name'),
 
             'address' =>
-                $this->request->getPost('address'),
+            $this->request->getPost('address'),
 
             'latitude' =>
-                $this->request->getPost('latitude'),
+            $this->request->getPost('latitude'),
 
             'longitude' =>
-                $this->request->getPost('longitude'),
+            $this->request->getPost('longitude'),
 
             'is_active' =>
-                $this->request->getPost('is_active'),
+            $this->request->getPost('is_active'),
 
             'modified_by' =>
-                session()->get('user_id')
+            session()->get('user_id')
 
         ]);
 
@@ -312,5 +310,4 @@ class Warehouse extends BaseController
             'message' => 'Warehouse berhasil diupdate'
         ]);
     }
-
 }

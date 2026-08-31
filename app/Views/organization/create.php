@@ -36,7 +36,7 @@
                 <h1 class="page-title">Create New Organization</h1>
             </div>
             <div class="ml-auto pageheader-btn">
-                <a href="<?=base_url()?>/CompanyType/create" class="btn btn-radius btn-success-light btn-icon mr-2">
+                <a href="<?= base_url() ?>/CompanyType/create" class="btn btn-radius btn-success-light btn-icon mr-2">
                     <i class="fa fa-plus mr-2"></i>Create Organization Type
                 </a>
             </div>
@@ -61,14 +61,14 @@
                                     <label class="form-label">Organization Type <span class="text-danger">*</span></label>
                                     <select name="organization_type_id" class="form-control select2" required>
                                         <option value="">-- Select --</option>
-                                        <?php foreach($organizationtype as $row): ?>
-                                        <option value="<?= $row['organization_type_id']; ?>">
-                                            <?= $row['type_name']; ?>
-                                        </option>
+                                        <?php foreach ($organizationtype as $row): ?>
+                                            <option value="<?= $row['organization_type_id']; ?>">
+                                                <?= $row['type_name']; ?>
+                                            </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-md-6">
                                     <label class="form-label">Organization Name <span class="text-danger">*</span></label>
                                     <input type="text" name="organization_name" class="form-control" oninput="this.value = this.value.toUpperCase();" required>
@@ -76,16 +76,16 @@
 
                                 <div class="col-md-6">
                                     <label class="form-label">PIC Name <span class="text-danger">*</span></label>
-                                    <input type="text" name="pic_name" class="form-control" 
-                                    oninput="this.value = this.value.replace(/(^\w|\s\w)/g, m => m.toUpperCase());" 
-                                    style="text-transform: capitalize;" required>
+                                    <input type="text" name="pic_name" class="form-control"
+                                        oninput="this.value = this.value.replace(/(^\w|\s\w)/g, m => m.toUpperCase());"
+                                        style="text-transform: capitalize;" required>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label">Phone <span class="text-danger">*</span></label>
-                                    <input type="text" name="phone" class="form-control" pattern="[0-9]+" 
-                                    title="Number Only" 
-                                    placeholder="Example: 628749345/081234567" required>
+                                    <input type="text" name="phone" class="form-control" pattern="[0-9]+"
+                                        title="Number Only"
+                                        placeholder="Example: 628749345/081234567" required>
                                 </div>
 
                                 <div class="col-md-6">
@@ -145,188 +145,184 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script type="text/javascript">
-<?php if (session()->getFlashdata('success')) {?>
-toastr.success("<?php echo session()->getFlashdata('success'); ?>");
-<?php }  ?>
+    <?php if (session()->getFlashdata('success')) { ?>
+        toastr.success("<?php echo session()->getFlashdata('success'); ?>");
+    <?php }  ?>
 </script>
 
 <script>
-$('#organizationForm').submit(function(e){
+    $('#organizationForm').submit(function(e) {
 
-    e.preventDefault();
+        e.preventDefault();
 
-    $.ajax({
-        url: "<?= base_url('/organization/savecreate') ?>",
-        type: "POST",
-        data: $(this).serialize(),
-        dataType: "json",
-        beforeSend: function(){
+        $.ajax({
+            url: "<?= base_url('/organization/save') ?>",
+            type: "POST",
+            data: $(this).serialize(),
+            dataType: "json",
+            beforeSend: function() {
 
-            Swal.fire({
-                title: 'Processing...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-        },
-        success: function(response){
-
-            Swal.close();
-                    
-            if (response.status)
-            {
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: response.message
-                }).then(() => {
-
-                    window.location.href = response.redirect;
-
+                    title: 'Processing...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
                 });
 
-            } else {
+            },
+            success: function(response) {
 
-                let msg = '';
+                Swal.close();
 
-                if (response.errors) {
+                if (response.status) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message
+                    }).then(() => {
 
-                    $.each(response.errors, function(key, val) {
-                        msg += val + '<br>';
+                        window.location.href = response.redirect;
+
                     });
 
                 } else {
 
-                    msg = response.message;
+                    let msg = '';
+
+                    if (response.errors) {
+
+                        $.each(response.errors, function(key, val) {
+                            msg += val + '<br>';
+                        });
+
+                    } else {
+
+                        msg = response.message;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation',
+                        html: msg
+                    });
+
                 }
+
+            },
+            error: function() {
 
                 Swal.fire({
                     icon: 'error',
-                    title: 'Validation',
-                    html: msg
+                    title: 'Error',
+                    text: 'Terjadi kesalahan sistem'
                 });
 
             }
+        });
 
-        },
-        error: function(){
-
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Terjadi kesalahan sistem'
-            });
-
-        }
     });
 
-});
+    $('#province_id').change(function() {
 
-$('#province_id').change(function() {
+        let provinceId = $(this).val();
 
-    let provinceId = $(this).val();
+        $.get("<?= base_url('users/getProvinsi/') ?>/" + provinceId, function(response) {
 
-    $.get("<?= base_url('users/getProvinsi/') ?>/" + provinceId, function(response){
-
-            $.each(response, function(i,row){
+            $.each(response, function(i, row) {
                 $('#ProvinsiName').val(row.provinsi);
             });
 
-        }
-    );
+        });
 
-    $('#city_id').html('<option value="">Loading...</option>');
-    $('#district_id').html('<option value="">-- Select District --</option>');
-    $('#village_id').html('<option value="">-- Select Village --</option>');
+        $('#city_id').html('<option value="">Loading...</option>');
+        $('#district_id').html('<option value="">-- Select District --</option>');
+        $('#village_id').html('<option value="">-- Select Village --</option>');
 
-    $.get("<?= base_url('users/getCity/') ?>/" + provinceId, function(response){
+        $.get("<?= base_url('users/getCity/') ?>/" + provinceId, function(response) {
 
             let option = '<option value="">-- Select City --</option>';
 
-            $.each(response, function(i,row){
+            $.each(response, function(i, row) {
 
                 option +=
-                    '<option value="'+row.id+'" data-name="'+row.kabupaten_kota+'">'+
-                    row.kabupaten_kota+
+                    '<option value="' + row.id + '" data-name="' + row.kabupaten_kota + '">' +
+                    row.kabupaten_kota +
                     '</option>';
-                
+
             });
 
             $('#city_id').html(option).trigger('change.select2');
 
-        }
-    );
+        });
 
-});
+    });
 
-$('#city_id').change(function() {
+    $('#city_id').change(function() {
 
-    let cityId = $(this).val();
+        let cityId = $(this).val();
 
-    let cityName = $(this).find(':selected').data('name');
+        let cityName = $(this).find(':selected').data('name');
 
-    $('#district_id').html('<option value="">Loading...</option>');
-    $('#village_id').html('<option value="">-- Select Village --</option>');
+        $('#district_id').html('<option value="">Loading...</option>');
+        $('#village_id').html('<option value="">-- Select Village --</option>');
 
-    $.get("<?= base_url('users/getDistrict/') ?>/" + cityId, function(response){
+        $.get("<?= base_url('users/getDistrict/') ?>/" + cityId, function(response) {
 
             let option = '<option value="">-- Select District --</option>';
 
-            $.each(response, function(i,row){
+            $.each(response, function(i, row) {
                 option +=
-                    '<option value="'+row.id+'" data-name="'+row.kecamatan+'">'+
-                    row.kecamatan+
+                    '<option value="' + row.id + '" data-name="' + row.kecamatan + '">' +
+                    row.kecamatan +
                     '</option>';
 
             });
 
             $('#district_id').html(option).trigger('change.select2');
-            
+
             $('#cityName').val(cityName);
-        }
-    );
-});
+        });
+    });
 
 
-$('#district_id').change(function() {
+    $('#district_id').change(function() {
 
-    let districtId = $(this).val();
+        let districtId = $(this).val();
 
-    let districtName = $(this).find(':selected').data('name');
+        let districtName = $(this).find(':selected').data('name');
 
-    $('#village_id').html('<option value="">Loading...</option>');
+        $('#village_id').html('<option value="">Loading...</option>');
 
-    $.get("<?= base_url('users/getVillage/') ?>/" + districtId,
-        function(response){
+        $.get("<?= base_url('users/getVillage/') ?>/" + districtId,
+            function(response) {
 
-            let option = '<option value="">-- Select Village --</option>';
+                let option = '<option value="">-- Select Village --</option>';
 
-            $.each(response, function(i,row){
+                $.each(response, function(i, row) {
 
-                option +=
-                    '<option value="'+row.id+'" data-name="'+row.kelurahan+'">'+
-                    row.kelurahan+
-                    '</option>';
+                    option +=
+                        '<option value="' + row.id + '" data-name="' + row.kelurahan + '">' +
+                        row.kelurahan +
+                        '</option>';
 
-                $('#VillageName').val(row.kelurahan); 
-            });
+                    $('#VillageName').val(row.kelurahan);
+                });
 
-            $('#village_id').html(option).trigger('change.select2');
+                $('#village_id').html(option).trigger('change.select2');
 
-            $('#districtName').val(districtName);
-        }
-    );
+                $('#districtName').val(districtName);
+            }
+        );
 
-});
+    });
 
-$('#village_id').change(function() {
+    $('#village_id').change(function() {
 
-    let villageName = $(this).find(':selected').data('name');
+        let villageName = $(this).find(':selected').data('name');
 
-    $('#villageName').val(villageName);
+        $('#villageName').val(villageName);
 
 
-});
+    });
 </script>

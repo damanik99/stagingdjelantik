@@ -8,6 +8,17 @@
 <link href="<?= base_url() ?>/teamplate/assets/plugins/datatable/responsivebootstrap4.min.css" rel="stylesheet" />
 <link href="<?= base_url() ?>/teamplate/assets/plugins/datatable/fileexport/buttons.bootstrap4.min.css"
     rel="stylesheet" />
+
+<style>
+    .table th.address-column,
+    .table td.address-column {
+        width: 250px;
+        max-width: 250px;
+        white-space: normal;
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
+    }
+</style>
 <!-- CSS END -->
 
 <!-- MAIN -->
@@ -23,17 +34,17 @@
             <div>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="#">Table</a></li>
-                    <li class="breadcrumb-item active" aria-current="page"><?=$title?></li>
+                    <li class="breadcrumb-item active" aria-current="page"><?= $title ?></li>
                 </ol>
                 <h1 class="page-title">Data Users</h1>
             </div>
             <div class="ml-auto pageheader-btn">
-                <a href="<?=base_url()?>/users/create" class="btn btn-success-light btn-icon mr-2">
+                <a href="<?= base_url() ?>/users/create" class="btn btn-success-light btn-icon mr-2">
                     <span>
                         <i class="fa fa-plus mr-2"></i>
                     </span> Create New
                 </a>
-                <!-- <a href="<?=base_url()?>/user/upload" class="btn btn-success btn-icon text-white mr-2">
+                <!-- <a href="<?= base_url() ?>/user/upload" class="btn btn-success btn-icon text-white mr-2">
                     <span>
                         <i class="fa fa-upload"></i>
                     </span> UPLOAD
@@ -113,61 +124,72 @@
 <script src="<?= base_url() ?>/teamplate/assets/plugins/datatable/dataTables.responsive.min.js"></script>
 
 <script>
-$('#datatables').DataTable({
-    processing: true,
-    serverSide: true,
-    ajax: {
-        url: "<?= base_url('/users/datatables') ?>" ,
-        type: 'POST'
-    },
-    columns: [
-        { data: 'username' },
-        { data: 'fullname' },
-        { data: 'phone' },
-        { data: 'address' },
-        { data: 'title' },
-        { data: 'status' },
-        { data: 'action' }
-    ],
-    columnDefs: [
-        {
-            targets: [4,5],
-            orderable: false
-        }
-    ]
-});
-
-$(document).on('click', '.btnDetail', function () {
-    
-    let id = $(this).data('id');
-
-    $("#detailUsersContent").html("");
-    $("#loadingDetail").show();
-
-    $("#modalDetailUsers").modal("show");
-// alert('test');
-    $.ajax({
-        url: "<?= base_url('/users/detail')?>/" + id,
-        type: "GET",
-        success: function(response){
-            // console.log(response);
-            $("#loadingDetail").hide();
-            $("#detailUsersContent").html(response);
-
+    $('#datatables').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "<?= base_url('/users/datatables') ?>",
+            type: 'POST'
         },
-        error:function(){
+        columns: [{
+                data: 'username'
+            },
+            {
+                data: 'fullname'
+            },
+            {
+                data: 'phone'
+            },
+            {
+                data: 'address',
+                className: 'address-column'
+            },
+            {
+                data: 'title'
+            },
+            {
+                data: 'status'
+            },
+            {
+                data: 'action'
+            }
+        ],
+        columnDefs: [{
+            targets: [4, 5],
+            orderable: false
+        }]
+    });
 
-            $("#loadingDetail").hide();
+    $(document).on('click', '.btnDetail', function() {
 
-            $("#detailUsersContent").html(`
+        let id = $(this).data('id');
+
+        $("#detailUsersContent").html("");
+        $("#loadingDetail").show();
+
+        $("#modalDetailUsers").modal("show");
+        // alert('test');
+        $.ajax({
+            url: "<?= base_url('/users/detail') ?>/" + id,
+            type: "GET",
+            success: function(response) {
+                // console.log(response);
+                $("#loadingDetail").hide();
+                $("#detailUsersContent").html(response);
+
+            },
+            error: function() {
+
+                $("#loadingDetail").hide();
+
+                $("#detailUsersContent").html(`
                 <div class="alert alert-danger">
                     Failed to load users detail.
                 </div>
             `);
 
-        }
+            }
+        });
+
     });
-
-});
-
 </script>

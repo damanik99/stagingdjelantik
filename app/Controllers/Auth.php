@@ -10,7 +10,7 @@ class Auth extends BaseController
 {
     protected $helpers = [];
     protected $userModel;
-    
+
     public function __construct()
     {
         helper(['url', 'form']);
@@ -85,7 +85,6 @@ class Auth extends BaseController
             return redirect()->to('auth');
         }
 
-
         // =========================================================
         // 4. CEK PASSWORD
         // =========================================================
@@ -100,7 +99,6 @@ class Auth extends BaseController
 
             return redirect()->to('auth');
         }
-
 
         // =========================================================
         // 5. REGENERATE SESSION
@@ -122,7 +120,6 @@ class Auth extends BaseController
         // =========================================================
         // SET ACTIVE PROGRAM
         // =========================================================
-
         $userId = $user['users_id'];
 
         $currentProgramId = $this->session->get('program');
@@ -207,7 +204,40 @@ class Auth extends BaseController
             ]);
 
             return redirect()->to('driver/index');
+        } elseif ($user['title'] == 'COLLECTOR') {
+
+            $users = $this->db->table('users')
+                ->where('users_id', $user['users_id'])
+                ->get()->getRowArray();
+
+            if (!$users) {
+                $this->session->destroy();
+
+                $this->session->setFlashdata(
+                    'message',
+                    '<div class="alert alert-danger" role="alert">
+                        Akun Driver Tidak Terdaftar
+                    </div>'
+                );
+
+                return redirect()->to('auth');
+            }
+
+            // Driver ID hanya context untuk kebutuhan modul driver
+            $this->session->set([
+                'title' => 'COLLECTOR'
+            ]);
+
+            return redirect()->to('mobile/user/home');
         }
+
+        $redirectUrl = session()->get('redirect_url');
+
+        session()->remove('redirect_url');
+
+        return redirect()->to(
+            $redirectUrl ?: base_url('Dashboard')
+        );
 
 
         // =========================================================

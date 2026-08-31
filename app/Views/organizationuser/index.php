@@ -11,6 +11,29 @@
 <link href="<?= base_url() ?>/teamplate/assets/plugins/tabs/tabs.css" rel="stylesheet" />
 <!-- CSS END -->
 
+<style>
+    .btn-defaultsx {
+        color: #242e4c;
+        background: #e9e9e9;
+        border-color: #ebedfc;
+        box-shadow: none;
+    }
+
+    .page-headersxd {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-align: center;
+        align-items: center;
+        margin: 0.5rem 0rem;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding: 0;
+        border-radius: 7px;
+        position: relative;
+        min-height: 50px;
+    }
+</style>
+
 <!-- MAIN -->
 <?= $this->include('layout/body') ?>
 <!-- MAIN END -->
@@ -21,41 +44,48 @@
 <div class="app-content">
     <div class="side-app">
 
-        <!-- PAGE-HEADER -->
         <div class="page-header">
             <div>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="#">Table</a></li>
-                    <li class="breadcrumb-item active" aria-current="page"><?= $title ?></li>
+                    <li class="breadcrumb-item active" aria-current="page">Users Organization</li>
                 </ol>
-                <h1 class="page-title">Data Warehouse</h1>
+            </div>
+        </div>
+        <div class="page-headersxd">
+            <div>
+                <h1 class="page-title">Data Users Organization</h1>
             </div>
             <div class="ml-auto pageheader-btn">
-                <a href="<?= base_url() ?>Warehouse/create" class="btn btn-success-light btn-icon mr-2">
+                <a href="<?= base_url() ?>OrganizationUser/upload" class="btn btn-primary-light btn-icon mr-2">
+                    <span>
+                        <i class="fa fa-upload mr-2"></i>
+                    </span> Upload
+                </a>
+                <a href="<?= base_url() ?>OrganizationUser/create" class="btn btn-success-light btn-icon mr-2">
                     <span>
                         <i class="fa fa-plus mr-2"></i>
-                    </span> Create New
+                    </span> New Create
                 </a>
             </div>
         </div>
-
-        <!-- PAGE-HEADER END -->
         <div class="row">
             <div class="col-md-12 col-lg-12">
                 <div class="card">
                     <div class="card-status bg-teal br-tr-7 br-tl-7"></div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table id="dataTbls" class="table table-bordered border-t0 key-buttons text-nowrap w-100">
+                            <table id="shipmentTable" class="table table-bordered border-t0 key-buttons text-nowrap w-100">
                                 <thead>
                                     <tr>
-                                        <th width="5%">No</th>
-                                        <th>Warehouse Code</th>
-                                        <th>Warehouse Name</th>
-                                        <th>Address</th>
-                                        <th width="10%">Status</th>
-                                        <th width="15%">Created Date</th>
-                                        <th>Action</th>
+                                        <th>Organization Name</th>
+                                        <th>Program Name</th>
+                                        <th>Username</th>
+                                        <th>Fullname</th>
+                                        <th class="text-center">Phone</th>
+                                        <th>Email</th>
+                                        <th>status_badge</th>
+                                        <th width="120">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -68,14 +98,13 @@
         </div>
 
         <!-- Modal -->
-        <div class="modal fade" id="modalDetailWareHouse" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal fade" id="modalDetailOrgzUsr" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
                 <div class="modal-content">
 
                     <div class="modal-header bg-teal">
                         <h5 class="modal-title text-white">
-                            <i class="fa fa-building mr-2"></i>
-                            Warehose
+                            Users Organization
                         </h5>
 
                         <button type="button" class="close text-white" data-dismiss="modal">
@@ -90,14 +119,11 @@
                             Loading...
                         </div>
 
-                        <div id="detailWareContent"></div>
-
+                        <div id="detailOrgzUsr"></div>
                     </div>
-
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -109,74 +135,83 @@
 <script src="<?= base_url() ?>/teamplate/assets/plugins/datatable/jquery.dataTables.min.js"></script>
 <script src="<?= base_url() ?>/teamplate/assets/plugins/datatable/dataTables.bootstrap4.min.js"></script>
 <script src="<?= base_url() ?>/teamplate/assets/plugins/datatable/dataTables.responsive.min.js"></script>
-
+<!-- SWEET ALERT -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    $(function() {
+    $(document).ready(function() {
 
-        $('#dataTbls').DataTable({
-
+        $('#shipmentTable').DataTable({
             processing: true,
             serverSide: true,
+            responsive: true,
+            autoWidth: false,
 
             ajax: {
-                url: '<?= base_url() ?>/warehouse/datatables',
-                type: 'POST'
+                url: "<?= base_url('organizationuser/datatables') ?>",
+                type: "POST"
             },
+            "order": [
+                [0, 'desc']
+            ],
 
             columns: [{
-                    data: 'no',
-                    orderable: false
+                    data: 'organization_name'
                 },
                 {
-                    data: 'warehouse_code'
+                    data: 'name'
                 },
                 {
-                    data: 'warehouse_name'
+                    data: 'username'
                 },
                 {
-                    data: 'address'
+                    data: 'fullname'
                 },
                 {
-                    data: 'status'
+                    data: 'phone'
                 },
                 {
-                    data: 'created_date'
+                    data: 'email'
+                },
+                {
+                    data: 'status_badge'
                 },
                 {
                     data: 'action',
                     orderable: false,
                     searchable: false
                 }
-            ]
-
+            ],
+            columnDefs: [{
+                targets: [4, 7],
+                orderable: false
+            }]
         });
-
     });
 
     $(document).on('click', '.btnDetail', function() {
 
         let id = $(this).data('id');
 
-        $("#detailCompanyContent").html("");
+        $("#detailOrgzUsr").html("");
         $("#loadingDetail").show();
 
-        $("#modalDetailWareHouse").modal("show");
+        $("#modalDetailOrgzUsr").modal("show");
 
         $.ajax({
-            url: "<?= base_url('/warehouse/detail') ?>/" + id,
+            url: "<?= base_url('organizationuser/detail') ?>/" + id,
             type: "GET",
             success: function(response) {
 
                 $("#loadingDetail").hide();
-                $("#detailWareContent").html(response);
+                $("#detailOrgzUsr").html(response);
 
             },
             error: function() {
 
                 $("#loadingDetail").hide();
 
-                $("#detailWareContent").html(`
+                $("#detailOrgzUsr").html(`
                 <div class="alert alert-danger">
                     Failed to load company detail.
                 </div>

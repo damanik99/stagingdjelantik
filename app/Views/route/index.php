@@ -20,11 +20,11 @@
             <div>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="#">Table</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Privilege</li>
+                    <li class="breadcrumb-item active" aria-current="page">Route</li>
                 </ol>
             </div>
             <div class="ml-auto pageheader-btn">
-                <a href="<?= base_url() ?>Privilege/create" class="btn btn-success-light btn-icon mr-2">
+                <a href="<?= base_url() ?>Route/create" class="btn btn-success-light btn-icon mr-2">
                     <span>
                         <i class="fa fa-plus mr-2"></i>
                     </span> New Create
@@ -47,6 +47,7 @@
                                         <th class="wd-15p">Group</th>
                                         <th class="wd-15p">Page</th>
                                         <th class="wd-15p">Actions</th>
+                                        <th class="wd-15p">Group Plan</th>
                                         <th class="wd-25p">Action</th>
                                     </tr>
                                 </thead>
@@ -77,7 +78,7 @@
             processing: true,
             serverSide: true,
             ajax: {
-                url: "<?= base_url() ?>/privilege/datatables", // endpoint backend
+                url: "<?= base_url() ?>route/datatables", // endpoint backend
                 type: 'POST'
             },
             "order": [
@@ -91,6 +92,9 @@
                 },
                 {
                     data: 'actions'
+                },
+                {
+                    data: 'groupplan'
                 },
                 {
                     data: 'action',

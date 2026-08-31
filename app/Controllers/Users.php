@@ -36,7 +36,7 @@ class Users extends BaseController
         $session = \Config\Services::session();
         if ($session->get('masuk') != true) {
             session()->setFlashdata('message', '<div class="alert alert-danger" role="alert">Maaf! Anda tidak memiliki hak akses ke sini! </div>');
-            header('Location: '.base_url('auth'));
+            header('Location: ' . base_url('auth'));
             exit();
         }
 
@@ -69,7 +69,7 @@ class Users extends BaseController
         $data['groupProgram'] = $this->users->getgroupProgram();
         $data['groups'] = $this->group
             ->findAll();
-        
+
         $data['companies'] = $this->db->table('company_program a')
             ->select('
                 b.company_program_id,
@@ -84,15 +84,15 @@ class Users extends BaseController
             ->orderBy('c.company_name', 'ASC')
             ->get()
             ->getResultArray();
-        
+
         $data['provinces'] = $this->provinceModel
             ->orderBy('provinsi', 'ASC')
             ->findAll();
-            
+
         return view('users/create', $data);
     }
 
-    public function store()
+    public function save()
     {
 
         $validation = \Config\Services::validation();
@@ -113,8 +113,7 @@ class Users extends BaseController
             'data_level' => 'required'
         ];
 
-        if (!$validation->setRules($rules)->run($this->request->getPost()))
-        {
+        if (!$validation->setRules($rules)->run($this->request->getPost())) {
             return $this->response->setJSON([
                 'status' => false,
                 'message' => $validation->getErrors()
@@ -127,16 +126,14 @@ class Users extends BaseController
 
         $groupName = $group['name'] ?? '';
         $program_id = session()->get('program');
-        
-        if(strtolower($groupName) == 'driver')
-        {
+
+        if (strtolower($groupName) == 'driver') {
             $driverRules = [
                 'driver_type' => 'required',
                 'license_number' => 'required'
             ];
 
-            if (!$validation->setRules($driverRules)->run($this->request->getPost()))
-            {
+            if (!$validation->setRules($driverRules)->run($this->request->getPost())) {
                 return $this->response->setJSON([
                     'status' => false,
                     'message' => $validation->getErrors()
@@ -147,8 +144,7 @@ class Users extends BaseController
                 $this->request->getPost('driver_type') == 'SUPPLIER'
                 &&
                 empty($this->request->getPost('company_program_id'))
-            )
-            {
+            ) {
                 return $this->response->setJSON([
                     'status' => false,
                     'message' => [
@@ -192,9 +188,8 @@ class Users extends BaseController
                 'created_by'    => session()->get('users_id'),
                 'modified_by'   => null
             ]);
-            
-            if (strtolower($groupName) == 'driver')
-            {
+
+            if (strtolower($groupName) == 'driver') {
                 $this->driver->insert([
                     'users_id'            => $usersId,
                     'company_program_id'  => $this->request->getPost('company_program_id'),
@@ -210,8 +205,7 @@ class Users extends BaseController
                 ]);
             }
 
-            if ($this->db->transStatus() === false)
-            {
+            if ($this->db->transStatus() === false) {
                 throw new \Exception('Transaction Error');
             }
 
@@ -221,7 +215,6 @@ class Users extends BaseController
                 'status' => true,
                 'message' => 'Data berhasil disimpan'
             ]);
-
         } catch (\Exception $e) {
 
             $this->db->transRollback();
@@ -319,14 +312,11 @@ class Users extends BaseController
             $request->getPost('order')[5]['dir'] ?? 'DESC';
 
         $orderBy =
-            $orderColumn[
-                $request->getPost('order')[5]['column'] ?? 5
-            ];
+            $orderColumn[$request->getPost('order')[5]['column'] ?? 5];
 
         $sql = "
             SELECT
                 a.*,
-
                 p.provinsi,
                 c.kabupaten_kota,
                 d.kecamatan,
@@ -359,19 +349,19 @@ class Users extends BaseController
             $status = $row['active']
                 ? '<span class="badge badge-success">Active</span>'
                 : '<span class="badge badge-danger">Inactive</span>';
-                
+
             $row['address_full'] = $address;
             $row['status_badge'] = $status;
 
             $row['action'] = '
 
                 <a href="javascript:void(0);"
-                class="btn bg-gray-dark btn-sm text-white mb-2 mb-xl-1 btnDetail" data-id="'.$row['users_id'].'"
+                class="btn bg-gray-dark btn-sm text-white mb-2 mb-xl-1 btnDetail" data-id="' . $row['users_id'] . '"
                 data-original-title="View">
                     <i class="fa fa-eye"></i>
                 </a>
 
-                <a href="'.base_url('/users/editusers/'.$row['users_id']).'"
+                <a href="' . base_url('/users/editusers/' . $row['users_id']) . '"
                 class="btn bg-cyan btn-sm text-white mb-2 mb-xl-1">
                     <i class="fa fa-pencil"></i>
                 </a>
@@ -397,28 +387,29 @@ class Users extends BaseController
         ]);
     }
 
-    public function detail($id) 
+    public function detail($id)
     {
         $program_id = session()->get('program');
-        $companies = $this->db->table('company_program a')
+        $organization = $this->db->table('organization a')
             ->select('
-                b.company_program_id,
+                b.organization_program_id,
                 c.*
             ')
-            ->join('company_program b', 'a.company_program_id = b.company_program_id')
-            ->join('company c', 'b.company_id = c.company_id')
-            ->join('companytype d', 'b.company_type_id = d.type_id')
-            ->where('c.status_id', '15')
+            ->join('organization_program b', 'a.organization_id = b.organization_id')
+            ->join('organization c', 'b.organization_id = c.organization_id')
+            ->join('organization_type d', 'b.organization_type_id = d.organization_type_id')
+            ->where('b.status_id', '15')
             ->where('d.type_name', 'Supplier')
             ->where('b.program_id', $program_id)
-            ->orderBy('c.company_name', 'ASC')
+            ->orderBy('c.organization_name', 'ASC')
             ->get()
             ->getRowArray();
-
+        // var_dump($organization);
+        // exit;
         $provinces = $this->provinceModel
             ->orderBy('provinsi', 'ASC')
             ->findAll();
-        
+
         $users = $this->users->dataUsers($id);
         $driver = $this->db->table('driver')->where('users_id', $id)->get()->getRowArray();
 
@@ -426,7 +417,7 @@ class Users extends BaseController
             'title' => 'Detail Users',
             'views' => $users,
             'driverGroupId' => self::DRIVER_GROUP,
-            'companies' => $companies,
+            'organization' => $organization,
             'provinces' => $provinces,
             'driver' => $driver
         ];
@@ -476,7 +467,7 @@ class Users extends BaseController
     }
     // end get region
 
-    public function editusers($id) 
+    public function editusers($id)
     {
         $program_id = session()->get('program');
 
@@ -515,7 +506,7 @@ class Users extends BaseController
             ->orderBy('c.company_name', 'ASC')
             ->get()
             ->getRowArray();
-        
+
         $provinces = $this->provinceModel
             ->orderBy('provinsi', 'ASC')
             ->findAll();
@@ -575,7 +566,6 @@ class Users extends BaseController
                 'status' => true,
                 'message' => 'User updated successfully.'
             ]);
-
         } catch (\Throwable $e) {
 
             $db->transRollback();
@@ -616,7 +606,6 @@ class Users extends BaseController
                 $this->request->getPost('password'),
                 PASSWORD_DEFAULT
             );
-
         }
 
         if (empty($updateData)) {
@@ -703,7 +692,6 @@ class Users extends BaseController
 
                 $insertData[$field] =
                     $this->request->getPost($field);
-
             }
 
             $insertData['users_id'] = $userId;
@@ -745,9 +733,7 @@ class Users extends BaseController
             if ((string)($oldData[$field] ?? '') !== (string)$newValue) {
 
                 $changed[$field] = $newValue;
-
             }
-
         }
 
         return $changed;
@@ -776,7 +762,6 @@ class Users extends BaseController
                     'status' => false,
                     'message' => $this->validator->getErrors()
                 ]);
-
             }
 
             $userModel->update($id, [

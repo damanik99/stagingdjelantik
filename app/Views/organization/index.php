@@ -5,7 +5,7 @@
 <!-- CSS -->
 
 <!--- FONT-ICONS CSS -->
-<link href="<?= base_url() ?>/teamplate/assets/css/icons.css" rel="stylesheet"/>
+<link href="<?= base_url() ?>/teamplate/assets/css/icons.css" rel="stylesheet" />
 <!-- INTERNAL  DATA TABLE CSS-->
 <link href="<?= base_url() ?>/teamplate/assets/plugins/datatable/dataTables.bootstrap4.min.css" rel="stylesheet" />
 <link href="<?= base_url() ?>/teamplate/assets/plugins/datatable/responsivebootstrap4.min.css" rel="stylesheet" />
@@ -22,28 +22,26 @@
 <?php /** @var string $title */ ?>
 
 <style>
+    .btn-defaultsx {
+        color: #242e4c;
+        background: #e9e9e9;
+        border-color: #ebedfc;
+        box-shadow: none;
+    }
 
-.btn-defaultsx {
-    color: #242e4c;
-    background: #e9e9e9;
-    border-color: #ebedfc;
-    box-shadow: none;
-}
-
-.page-headersxd {
-  display: -ms-flexbox;
-  display: flex;
-  -ms-flex-align: center;
-  align-items: center;
-  margin: 0.5rem 0rem;
-  -ms-flex-wrap: wrap;
-  justify-content: space-between;
-  padding: 0;
-  border-radius: 7px;
-  position: relative;
-  min-height: 50px;
-}
-
+    .page-headersxd {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-align: center;
+        align-items: center;
+        margin: 0.5rem 0rem;
+        -ms-flex-wrap: wrap;
+        justify-content: space-between;
+        padding: 0;
+        border-radius: 7px;
+        position: relative;
+        min-height: 50px;
+    }
 </style>
 
 <!--app-content open-->
@@ -60,7 +58,7 @@
                 <!-- <h1 class="page-title">Data Organization</h1> -->
             </div>
             <!-- <div class="ml-auto pageheader-btn">
-                <a href="<?=base_url()?>/Organization/create" class="btn btn-success-light btn-icon mr-2">
+                <a href="<?= base_url() ?>/Organization/create" class="btn btn-success-light btn-icon mr-2">
                     <span>
                         <i class="fa fa-plus mr-2"></i>
                     </span> Create New
@@ -78,14 +76,14 @@
                 </a>
             </div>
             <div class="mr">
-                <a href="<?=base_url()?>Organization/buyerindex" class="btn btn-radius btn-default mr-2">
+                <a href="<?= base_url() ?>Organization/buyerindex" class="btn btn-radius btn-default mr-2">
                     <span>
                         <i class="fa fa-industry mr-2"></i>
                     </span> Buyer
                 </a>
             </div>
             <div class="mr-auto">
-                <a href="<?=base_url()?>Organization/pkkindex" class="btn btn-radius btn-default mr-2">
+                <a href="<?= base_url() ?>Organization/pkkindex" class="btn btn-radius btn-default mr-2">
                     <span>
                         <i class="fa fa-solid fa-users mr-2"></i>
                     </span> PKK
@@ -99,14 +97,14 @@
                 <h1 class="page-title">Data Supplier</h1>
             </div>
             <div class="ml-auto pageheader-btn">
-                <a href="<?=base_url()?>Organization/create" class="btn btn-success-light btn-icon mr-2">
+                <a href="<?= base_url() ?>Organization/create" class="btn btn-success-light btn-icon mr-2">
                     <span>
                         <i class="fa fa-plus mr-2"></i>
                     </span> Create New
                 </a>
             </div>
         </div>
-        
+
         <div class="row">
             <div class="col-md-12 col-lg-12">
                 <div class="card">
@@ -178,71 +176,86 @@
 <script src="<?= base_url() ?>/teamplate/assets/plugins/datatable/dataTables.responsive.min.js"></script>
 
 <script>
-$(document).ready(function () {
+    $(document).ready(function() {
 
-    $('#organizationTable').DataTable({
-        processing: true,
-        serverSide: true,
-        responsive: false,
-        autoWidth: false,
-        order: [[7, 'desc']],
+        $('#organizationTable').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: false,
+            autoWidth: false,
+            order: [
+                [7, 'desc']
+            ],
 
-        ajax: {
-            url: "<?= base_url('/organization/suppliertables'); ?>",
-            type: "POST"
-        },
+            ajax: {
+                url: "<?= base_url('/organization/datatables'); ?>",
+                type: "POST"
+            },
 
-        columns: [
-            { data: 'organization_code' },
-            { data: 'organization_name' },
-            { data: 'pic_name' },
-            { data: 'phone' },
-            { data: 'type_name' },
-            { data: 'status_badge' },
-            { data: 'created_date' },
-            { data: 'action' }
-        ],
+            columns: [{
+                    data: 'organization_code'
+                },
+                {
+                    data: 'organization_name'
+                },
+                {
+                    data: 'pic_name'
+                },
+                {
+                    data: 'phone'
+                },
+                {
+                    data: 'type_name'
+                },
+                {
+                    data: 'status_badge'
+                },
+                {
+                    data: 'created_date'
+                },
+                {
+                    data: 'action'
+                }
+            ],
 
-        columnDefs: [
-            {
-                targets: [5,7],
+            columnDefs: [{
+                targets: [5, 7],
                 orderable: false
-            }
-        ],
+            }],
+        });
+
     });
 
-});
+    $(document).on('click', '.btnDetail', function() {
 
-$(document).on('click', '.btnDetail', function () {
+        let id = $(this).data('id');
 
-    let id = $(this).data('id');
+        $("#detailOrgzContent").html("");
+        $("#loadingDetail").show();
 
-    $("#detailOrgzContent").html("");
-    $("#loadingDetail").show();
+        $("#modalDetailOrgz").modal("show");
 
-    $("#modalDetailOrgz").modal("show");
+        $.ajax({
+            url: "<?= base_url('organization/detail') ?>/" + id,
+            type: "GET",
+            success: function(response) {
 
-    $.ajax({
-        url: "<?= base_url('organization/detail')?>/" + id,
-        type: "GET",
-        success: function(response){
+                $("#loadingDetail").hide();
+                $("#detailOrgzContent").html(response);
 
-            $("#loadingDetail").hide();
-            $("#detailOrgzContent").html(response);
+            },
+            error: function() {
 
-        },
-        error:function(){
+                $("#loadingDetail").hide();
 
-            $("#loadingDetail").hide();
-
-            $("#detailOrgzContent").html(`
+                $("#detailOrgzContent").html(`
                 <div class="alert alert-danger">
                     Failed to load company detail.
                 </div>
             `);
 
-        }
-    });
+            }
+        });
 
-});
+    });
 </script>

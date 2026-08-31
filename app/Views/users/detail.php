@@ -1,6 +1,8 @@
-<?php /** @var array<string, mixed> $views 
+<?php
+
+/** @var array<string, mixed> $views 
  * @var array<string, mixed> $driverGroupId 
- * @var array<string, mixed> $companies 
+ * @var array<string, mixed> $organization 
  * @var array<string, mixed> $driver */ ?>
 <div class="table-responsive">
     <table class="table table-striped table-bordered">
@@ -78,10 +80,15 @@
 
                 <?php if (($views['driver_type'] ?? '') === 'SUPPLIER'): ?>
 
-                <tr>
-                    <th>Supplier</th>
-                    <td><?= esc($companies['company_name']); ?></td>
-                </tr>
+                    <?php if ($organization != NULL) { ?>
+                        <tr>
+                            <th>Organization</th>
+                            <td><?= esc($organization['organization_name']); ?></td>
+                        </tr>
+                    <?php } else { ?>
+                        <th>Organization</th>
+                        <td>-</td>
+                    <?php } ?>
 
                 <?php endif; ?>
 

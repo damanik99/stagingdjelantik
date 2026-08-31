@@ -289,7 +289,7 @@ class Driver extends BaseController
             $insertData = [
                 'shipment_id' => $shipmentId,
                 'shipmen_detail_id' => $shipmentDetialId,
-                'photo'       => '/image/shipmenttracking/' . $fileName,
+                'photo'       => '/upload/image/shipmenttracking/' . $fileName,
                 'latitude'    => $this->request->getPost('latitude'),
                 'longitude'   => $this->request->getPost('longitude'),
                 'location'    => $this->request->getPost('location'),

@@ -1,4 +1,6 @@
-<?php /** @var array<string, mixed> $views */ ?>
+<?php
+
+/** @var array<string, mixed> $views */ ?>
 <div class="table-responsive">
     <table class="table table-striped table-bordered">
         <tbody>

@@ -59,7 +59,7 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Full Name <span class="text-danger">*</span></label>
-                                    <input type="text"name="fullname" class="form-control">
+                                    <input type="text" name="fullname" class="form-control">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Phone <span class="text-danger">*</span></label>
@@ -111,13 +111,13 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Title <span class="text-danger">*</span></label>
                                     <select name="title" class="form-control select2">
-                                    <option value="">Pilih Role</option>
-                                    <?php foreach ($groupProgram as $row): ?>
-                                        <option value="<?= $row['group']; ?>">
-                                            <?= esc($row['title']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                        <option value="">Pilih Role</option>
+                                        <?php foreach ($groupProgram as $row): ?>
+                                            <option value="<?= $row['group']; ?>">
+                                                <?= esc($row['title']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Group <span class="text-danger">*</span></label>
@@ -125,7 +125,7 @@
                                         <option value="">
                                             -- Select Group --
                                         </option>
-                                        <?php foreach($groups as $group): ?>
+                                        <?php foreach ($groups as $group): ?>
                                             <option value="<?= $group['group_id']; ?>">
                                                 <?= esc($group['name']); ?>
                                             </option>
@@ -286,9 +286,9 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script type="text/javascript">
-<?php if (session()->getFlashdata('success')) {?>
-toastr.success("<?php echo session()->getFlashdata('success'); ?>");
-<?php }  ?>
+    <?php if (session()->getFlashdata('success')) { ?>
+        toastr.success("<?php echo session()->getFlashdata('success'); ?>");
+    <?php }  ?>
 </script>
 
 
@@ -303,12 +303,9 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
 
         let groupId = parseInt($(this).val());
 
-        if(groupId === DRIVER_GROUP_ID)
-        {
+        if (groupId === DRIVER_GROUP_ID) {
             $('#driverSection').slideDown();
-        }
-        else
-        {
+        } else {
             $('#driverSection').slideUp();
         }
 
@@ -318,12 +315,9 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
 
         let driverType = $(this).val();
 
-        if(driverType === 'SUPPLIER')
-        {
+        if (driverType === 'SUPPLIER') {
             $('#supplierSection').show();
-        }
-        else
-        {
+        } else {
             $('#supplierSection').hide();
         }
 
@@ -344,7 +338,7 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
         }
 
         $.ajax({
-            url: "<?= base_url('/users/store') ?>",
+            url: "<?= base_url('/users/save') ?>",
             type: 'POST',
             data: formData,
             processData: false,
@@ -427,8 +421,7 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    html:
-                        '<b>Status:</b> ' + xhr.status +
+                    html: '<b>Status:</b> ' + xhr.status +
                         '<br><br><b>Error:</b><br>' +
                         xhr.responseText
                 });
@@ -444,23 +437,22 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
         $('#district_id').html('<option value="">-- Select District --</option>');
         $('#village_id').html('<option value="">-- Select Village --</option>');
 
-        $.get("<?= base_url('users/getCity/') ?>/" + provinceId, function(response){
+        $.get("<?= base_url('users/getCity/') ?>/" + provinceId, function(response) {
 
-                let option = '<option value="">-- Select City --</option>';
+            let option = '<option value="">-- Select City --</option>';
 
-                $.each(response, function(i,row){
+            $.each(response, function(i, row) {
 
-                    option +=
-                        '<option value="'+row.id+'">'+
-                        row.kabupaten_kota+
-                        '</option>';
+                option +=
+                    '<option value="' + row.id + '">' +
+                    row.kabupaten_kota +
+                    '</option>';
 
-                });
+            });
 
-                $('#city_id').html(option);
+            $('#city_id').html(option);
 
-            }
-        );
+        });
 
     });
 
@@ -471,18 +463,17 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
         $('#district_id').html('<option value="">Loading...</option>');
         $('#village_id').html('<option value="">-- Select Village --</option>');
 
-        $.get("<?= base_url('users/getDistrict/') ?>/" + cityId, function(response){
+        $.get("<?= base_url('users/getDistrict/') ?>/" + cityId, function(response) {
 
-                let option = '<option value="">-- Select District --</option>';
-                $.each(response, function(i,row){
-                    option +=
-                        '<option value="'+row.id+'">'+
-                        row.kecamatan+
-                        '</option>';
-                });
-                $('#district_id').html(option);
-            }
-        );
+            let option = '<option value="">-- Select District --</option>';
+            $.each(response, function(i, row) {
+                option +=
+                    '<option value="' + row.id + '">' +
+                    row.kecamatan +
+                    '</option>';
+            });
+            $('#district_id').html(option);
+        });
     });
 
     $('#district_id').change(function() {
@@ -492,15 +483,15 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
         $('#village_id').html('<option value="">Loading...</option>');
 
         $.get("<?= base_url('users/getVillage/') ?>/" + districtId,
-            function(response){
+            function(response) {
 
                 let option = '<option value="">-- Select Village --</option>';
 
-                $.each(response, function(i,row){
+                $.each(response, function(i, row) {
 
                     option +=
-                        '<option value="'+row.id+'">'+
-                        row.kelurahan+
+                        '<option value="' + row.id + '">' +
+                        row.kelurahan +
                         '</option>';
 
                 });
@@ -511,5 +502,4 @@ toastr.success("<?php echo session()->getFlashdata('success'); ?>");
         );
 
     });
-    
 </script>

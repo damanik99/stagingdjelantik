@@ -19,7 +19,7 @@
             <div>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="<?= base_url() ?>/warehouse">Warehouse</a>
+                        <a href="<?= base_url() ?>Warehouse">Warehouse</a>
                     </li>
                     <li class="breadcrumb-item active">
                         Create
@@ -82,7 +82,7 @@
                                     </div>
                                 </div>
 
-                                 <!-- Address -->
+                                <!-- Address -->
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label class="form-label">
@@ -109,7 +109,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                
+
                             </div>
 
                             <div class="text-center mt-4">
@@ -136,88 +136,86 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+    $('#warehouseForm').submit(function(e) {
 
-$('#warehouseForm').submit(function(e){
+        e.preventDefault();
 
-    e.preventDefault();
+        $.ajax({
 
-    $.ajax({
+            url: '<?= base_url() ?>warehouse/save',
 
-        url : '<?= base_url() ?>/warehouse/store',
+            type: 'POST',
 
-        type : 'POST',
+            data: $(this).serialize(),
 
-        data : $(this).serialize(),
+            dataType: 'json',
 
-        dataType : 'json',
+            beforeSend: function() {
 
-        beforeSend : function(){
+                Swal.fire({
+                    title: 'Please Wait...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
-            Swal.fire({
-                title: 'Please Wait...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
+            },
+
+            success: function(response) {
+
+                Swal.close();
+
+                if (response.status) {
+
+                    Swal.fire({
+
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message
+
+                    }).then(function() {
+
+                        window.location.href =
+                            '<?= base_url() ?>Warehouse';
+
+                    });
+
+                } else {
+
+                    let msg = '';
+
+                    $.each(response.message, function(k, v) {
+
+                        msg += v + '<br>';
+
+                    });
+
+                    Swal.fire({
+
+                        icon: 'error',
+                        title: 'Validation Error',
+                        html: msg
+
+                    });
+
                 }
-            });
 
-        },
+            },
 
-        success : function(response){
-
-            Swal.close();
-
-            if(response.status){
+            error: function() {
 
                 Swal.fire({
 
-                    icon : 'success',
-                    title : 'Success',
-                    text : response.message
-
-                }).then(function(){
-
-                    window.location.href =
-                        '<?= base_url() ?>/warehouse';
-
-                });
-
-            }else{
-
-                let msg = '';
-
-                $.each(response.message,function(k,v){
-
-                    msg += v + '<br>';
-
-                });
-
-                Swal.fire({
-
-                    icon : 'error',
-                    title : 'Validation Error',
-                    html : msg
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Internal Server Error'
 
                 });
 
             }
 
-        },
-
-        error : function(){
-
-            Swal.fire({
-
-                icon : 'error',
-                title : 'Error',
-                text : 'Internal Server Error'
-
-            });
-
-        }
+        });
 
     });
-
-});
-
 </script>

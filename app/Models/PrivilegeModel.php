@@ -1,11 +1,13 @@
-<?php namespace App\Models;
+<?php
+
+namespace App\Models;
 
 use CodeIgniter\Model;
 
 class PrivilegeModel extends Model
 {
-    protected $table      = 'outbound';
-    protected $primaryKey = 'outbound_id';
+    protected $table      = 'privilege';
+    protected $primaryKey = 'privilege_id';
 
     protected $useAutoIncrement = true;
     protected $allowedFields = ['privilege_id', 'group_id', 'page_id', 'action_id', 'created_date', 'modified_date', 'created_by', 'modified_by'];
@@ -22,7 +24,7 @@ class PrivilegeModel extends Model
             JOIN page c ON a.`page_id` = c.`page_id`
             JOIN `action` d ON a.`action_id` = d.`action_id`
             JOIN groupprogram e ON b.`group_id` = e.`group_id`
-            WHERE e.program_id = "'.$id.'"
+            WHERE e.program_id = "' . $id . '"
             ORDER BY a.group_id, a.page_id, a.action_id ASC'
         );
 
@@ -35,10 +37,48 @@ class PrivilegeModel extends Model
             'SELECT a.group_id, b.name AS group_name, a.`program_id`, c.name AS program_name FROM groupprogram a
             JOIN `group` b ON a.`group_id` = b.`group_id`
             JOIN program c ON a.`program_id` = c.`program_id`
-            WHERE a.program_id = "'.$id.'" 
+            WHERE a.program_id = "' . $id . '" 
             ORDER BY b.name ASC'
         );
 
         return $group->getResultArray();
+    }
+
+    function groupRow($id)
+    {
+        $group = $this->db->query(
+            'SELECT a.group_id, b.name AS group_name, a.`program_id`, c.name AS program_name FROM groupprogram a
+            JOIN `group` b ON a.`group_id` = b.`group_id`
+            JOIN program c ON a.`program_id` = c.`program_id`
+            WHERE a.program_id = "' . $id . '" 
+            ORDER BY b.name ASC'
+        );
+
+        return $group->getRowArray();
+    }
+
+    public function getPrivilegesByGroup(int $groupId): array
+    {
+        return $this->select([
+            'privilege_id',
+            'group_id',
+            'page_id',
+            'action_id',
+        ])
+            ->where('group_id', $groupId)
+            ->findAll();
+    }
+
+    public function existsPrivilege(
+        int $groupId,
+        int $pageId,
+        int $actionId
+    ): bool {
+        return $this->where([
+            'group_id'  => $groupId,
+            'page_id'   => $pageId,
+            'action_id' => $actionId,
+        ])
+            ->countAllResults() > 0;
     }
 }

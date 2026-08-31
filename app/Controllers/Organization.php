@@ -25,7 +25,7 @@ class Organization extends BaseController
 
         if ($session->get('masuk') != true) {
             session()->setFlashdata('message', '<div class="alert alert-danger" role="alert">Maaf! Anda tidak memiliki hak akses ke sini! </div>');
-            header('Location: '.base_url('auth'));
+            header('Location: ' . base_url('auth'));
             exit();
         }
 
@@ -74,7 +74,7 @@ class Organization extends BaseController
         return view('organization/create', $data);
     }
 
-    public function savecreate()
+    public function save()
     {
         $validation = \Config\Services::validation();
 
@@ -109,7 +109,7 @@ class Organization extends BaseController
             $city,
             $province
         ]));
-        
+
         $this->db->transBegin();
 
         try {
@@ -136,11 +136,10 @@ class Organization extends BaseController
                 'created_date'         => date('Y-m-d H:i:s'),
                 'created_by'           => $user_id,
             ];
-            
+
             $this->db->table('organization_program')->insert($organizationProgram);
 
-            if ($this->db->transStatus() === false) 
-            {
+            if ($this->db->transStatus() === false) {
                 $this->db->transRollback();
 
                 $error = $this->db->error();
@@ -180,7 +179,6 @@ class Organization extends BaseController
                 'message'  => 'Data berhasil disimpan',
                 'redirect' => $redirect
             ]);
-
         } catch (\Throwable $e) {
 
             $this->db->transRollback();
@@ -192,7 +190,7 @@ class Organization extends BaseController
         }
     }
 
-    public function suppliertables()
+    public function datatables()
     {
         $request = service('request');
 
@@ -280,9 +278,7 @@ class Organization extends BaseController
 
         $orderDirection = $request->getPost('order')[0]['dir'] ?? 'DESC';
 
-        $orderBy = $orderColumn[
-            $request->getPost('order')[0]['column'] ?? 7
-        ];
+        $orderBy = $orderColumn[$request->getPost('order')[0]['column'] ?? 7];
 
         $sql = "
             SELECT
@@ -311,27 +307,25 @@ class Organization extends BaseController
 
                 $row['status_badge'] =
                     '<span class="badge badge-success">'
-                    .$row['status_name'].
+                    . $row['status_name'] .
                     '</span>';
-
             } else {
 
                 $row['status_badge'] =
                     '<span class="badge badge-danger">'
-                    .$row['status_name'].
+                    . $row['status_name'] .
                     '</span>';
-
             }
 
             $row['action'] = '
                 <a href="javascript:void(0);"
                     class="btn bg-gray-dark btn-sm text-white mb-2 mb-xl-1 btnDetail"
-                    data-id="'.$row['organization_program_id'].'"
+                    data-id="' . $row['organization_program_id'] . '"
                     title="Detail">
                     <i class="fa fa-eye"></i>
                 </a>
 
-                <a href="'.base_url('Organization/edit/'.$row['organization_program_id']).'"
+                <a href="' . base_url('Organization/edit/' . $row['organization_program_id']) . '"
                     class="btn btn-cyan btn-sm text-white mb-2 mb-xl-1">
                     <i class="fa fa-pencil"></i>
                 </a>
@@ -436,9 +430,7 @@ class Organization extends BaseController
 
         $orderDirection = $request->getPost('order')[0]['dir'] ?? 'DESC';
 
-        $orderBy = $orderColumn[
-            $request->getPost('order')[0]['column'] ?? 7
-        ];
+        $orderBy = $orderColumn[$request->getPost('order')[0]['column'] ?? 7];
 
         $sql = "
             SELECT
@@ -467,27 +459,25 @@ class Organization extends BaseController
 
                 $row['status_badge'] =
                     '<span class="badge badge-success">'
-                    .$row['status_name'].
+                    . $row['status_name'] .
                     '</span>';
-
             } else {
 
                 $row['status_badge'] =
                     '<span class="badge badge-danger">'
-                    .$row['status_name'].
+                    . $row['status_name'] .
                     '</span>';
-
             }
 
             $row['action'] = '
                 <a href="javascript:void(0);"
                     class="btn bg-gray-dark btn-sm text-white mb-2 mb-xl-1 btnDetail"
-                    data-id="'.$row['organization_program_id'].'"
+                    data-id="' . $row['organization_program_id'] . '"
                     title="Detail">
                     <i class="fa fa-eye"></i>
                 </a>
 
-                <a href="'.base_url('Organization/edit/'.$row['organization_program_id']).'"
+                <a href="' . base_url('Organization/edit/' . $row['organization_program_id']) . '"
                     class="btn btn-cyan btn-sm text-white mb-2 mb-xl-1">
                     <i class="fa fa-pencil"></i>
                 </a>
@@ -592,9 +582,7 @@ class Organization extends BaseController
 
         $orderDirection = $request->getPost('order')[0]['dir'] ?? 'DESC';
 
-        $orderBy = $orderColumn[
-            $request->getPost('order')[0]['column'] ?? 7
-        ];
+        $orderBy = $orderColumn[$request->getPost('order')[0]['column'] ?? 7];
 
         $sql = "
             SELECT
@@ -623,27 +611,25 @@ class Organization extends BaseController
 
                 $row['status_badge'] =
                     '<span class="badge badge-success">'
-                    .$row['status_name'].
+                    . $row['status_name'] .
                     '</span>';
-
             } else {
 
                 $row['status_badge'] =
                     '<span class="badge badge-danger">'
-                    .$row['status_name'].
+                    . $row['status_name'] .
                     '</span>';
-
             }
 
             $row['action'] = '
                 <a href="javascript:void(0);"
                     class="btn bg-gray-dark btn-sm text-white mb-2 mb-xl-1 btnDetail"
-                    data-id="'.$row['organization_program_id'].'"
+                    data-id="' . $row['organization_program_id'] . '"
                     title="Detail">
                     <i class="fa fa-eye"></i>
                 </a>
 
-                <a href="'.base_url('Organization/edit/'.$row['organization_program_id']).'"
+                <a href="' . base_url('Organization/edit/' . $row['organization_program_id']) . '"
                     class="btn btn-cyan btn-sm text-white mb-2 mb-xl-1">
                     <i class="fa fa-pencil"></i>
                 </a>
@@ -659,7 +645,7 @@ class Organization extends BaseController
             "data" => $data
         ]);
     }
-    
+
     public function detail($id)
     {
         $data = $this->organization->getOrganizationPro($id);
@@ -724,7 +710,6 @@ class Organization extends BaseController
                     'status'  => false,
                     'message' => 'Data tidak ditemukan.'
                 ]);
-
             }
 
             $organization_id = $organizationProgram['organization_id'];
@@ -733,19 +718,19 @@ class Organization extends BaseController
             $address = trim($this->request->getPost('address'));
 
             if ($this->request->getPost('village_name')) {
-                $address .= ', '.$this->request->getPost('village_name');
+                $address .= ', ' . $this->request->getPost('village_name');
             }
 
             if ($this->request->getPost('district_name')) {
-                $address .= ', '.$this->request->getPost('district_name');
+                $address .= ', ' . $this->request->getPost('district_name');
             }
 
             if ($this->request->getPost('city_name')) {
-                $address .= ', '.$this->request->getPost('city_name');
+                $address .= ', ' . $this->request->getPost('city_name');
             }
 
             if ($this->request->getPost('province_name')) {
-                $address .= ', '.$this->request->getPost('province_name');
+                $address .= ', ' . $this->request->getPost('province_name');
             }
 
             $organization = [
@@ -815,7 +800,6 @@ class Organization extends BaseController
                 'message' => 'Data berhasil diubah',
                 'redirect' => $redirect
             ]);
-
         } catch (\Throwable $e) {
 
             $this->db->transRollback();
@@ -826,5 +810,4 @@ class Organization extends BaseController
             ]);
         }
     }
-
 }
