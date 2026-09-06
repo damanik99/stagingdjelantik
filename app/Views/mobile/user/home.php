@@ -60,7 +60,7 @@
 
     <!-- Quick action -->
     <div class="quick-actions mt-3">
-        <a href="collect-oil.html" class="quick-action-btn qa-primary">
+        <a href="<?= base_url() ?>mobile/user/collectoil" class="quick-action-btn qa-primary">
             <div class="qa-icon"><i class="bi bi-plus-lg"></i></div>
             <div class="qa-label">Collect Oil</div>
         </a>
@@ -81,6 +81,10 @@
     </div>
 
 </main>
+
+<!-- MAIN -->
+<?= $this->include('mobile/layout/bottomnav') ?>
+<!-- MAIN END -->
 
 <!-- MAIN -->
 <?= $this->include('mobile/layout/footer') ?>

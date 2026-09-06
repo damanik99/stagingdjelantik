@@ -1,11 +1,6 @@
-<!-- Bottom navigation -->
-<nav class="bottom-nav">
-    <a href="home.html" class="nav-item active"><i class="bi bi-house-door-fill"></i> Home</a>
-    <a href="top-rank.html" class="nav-item"><i class="bi bi-trophy-fill"></i> Rank</a>
-    <a href="history.html" class="nav-item"><i class="bi bi-clock-history"></i> History</a>
-    <a href="profile.html" class="nav-item"><i class="bi bi-person-fill"></i> Profile</a>
-</nav>
 </div>
+<script src="<?= base_url('/teamplate/assets/js/jquery-3.4.1.min.js') ?>"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

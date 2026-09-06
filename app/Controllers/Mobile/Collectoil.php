@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Mobile;
 
+use App\Controllers\BaseController;
 use App\Models\UsersModel;
 
 class CollectorMobile extends BaseController
