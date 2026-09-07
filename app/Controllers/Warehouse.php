@@ -188,16 +188,14 @@ class Warehouse extends BaseController
 
     public function save()
     {
-        $rules = [
 
+        $program_id = session()->get('program');
+
+        $rules = [
             'warehouse_name' =>
             'required',
-
-            'latitude' =>
-            'permit_empty|decimal',
-
-            'longitude' =>
-            'permit_empty|decimal'
+            'latitude' => 'permit_empty|decimal',
+            'longitude' => 'permit_empty|decimal'
         ];
 
         if (!$this->validate($rules)) {
@@ -213,6 +211,8 @@ class Warehouse extends BaseController
 
             'warehouse_code' =>
             $this->request->getPost('warehouse_code'),
+
+            'program_id' => $program_id,
 
             'warehouse_name' =>
             $this->request->getPost('warehouse_name'),
